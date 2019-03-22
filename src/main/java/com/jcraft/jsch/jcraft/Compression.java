@@ -40,7 +40,8 @@ public class Compression implements com.jcraft.jsch.Compression {
     this.stream=new ZStream();
   }
 
-  public void init(int type, int level){
+  @Override
+public void init(int type, int level){
     if(type==DEFLATER){
       this.stream.deflateInit(level);
     }
@@ -52,7 +53,8 @@ public class Compression implements com.jcraft.jsch.Compression {
 
   private byte[] inflated_buf;
 
-  public byte[] compress(byte[] buf, int start, int[] len){
+  @Override
+public byte[] compress(byte[] buf, int start, int[] len){
     this.stream.next_in=buf;
     this.stream.next_in_index=start;
     this.stream.avail_in=len[0]-start;
@@ -87,7 +89,8 @@ public class Compression implements com.jcraft.jsch.Compression {
     return outputbuf;
   }
 
-  public byte[] uncompress(byte[] buffer, int start, int[] length){
+  @Override
+public byte[] uncompress(byte[] buffer, int start, int[] length){
     int inflated_end=0;
 
     this.stream.next_in=buffer;

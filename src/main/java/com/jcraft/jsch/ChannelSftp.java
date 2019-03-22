@@ -303,10 +303,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof JSchException) {
 				throw (JSchException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		}
 	}
 
@@ -354,10 +351,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -397,7 +391,7 @@ public class ChannelSftp extends ChannelSession {
 			int vsize = v.size();
 			if (vsize != 1) {
 				if (vsize == 0) {
-					if (this.isPattern(dst)) {
+					if (ChannelSftp.isPattern(dst)) {
 						throw new SftpException(SSH_FX_FAILURE, dst);
 					}
 					dst = Util.unquote(dst);
@@ -408,7 +402,7 @@ public class ChannelSftp extends ChannelSession {
 
 			final boolean isRemoteDir = this.isRemoteDir(dst);
 
-			v = this.glob_local(src);
+			v = ChannelSftp.glob_local(src);
 			vsize = v.size();
 
 			StringBuffer dstsb = null;
@@ -484,10 +478,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, e.toString());
+			throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
 		}
 	}
 
@@ -525,7 +516,7 @@ public class ChannelSftp extends ChannelSession {
 			final int vsize = v.size();
 			if (vsize != 1) {
 				if (vsize == 0) {
-					if (this.isPattern(dst)) {
+					if (ChannelSftp.isPattern(dst)) {
 						throw new SftpException(SSH_FX_FAILURE, dst);
 					}
 					dst = Util.unquote(dst);
@@ -549,10 +540,7 @@ public class ChannelSftp extends ChannelSession {
 				}
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, e.toString());
+			throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
 		}
 	}
 
@@ -696,10 +684,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, e.toString());
+			throw new SftpException(SSH_FX_FAILURE, e.toString(), e);
 		}
 	}
 
@@ -898,10 +883,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1022,10 +1004,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1059,10 +1038,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1213,10 +1189,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1624,10 +1597,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1671,7 +1641,7 @@ public class ChannelSftp extends ChannelSession {
 			// If pattern has included '*' or '?', we need to convert
 			// to UTF-8 string before globbing.
 			final byte[][] _pattern_utf8 = new byte[1][];
-			final boolean pattern_has_wildcard = this.isPattern(_pattern, _pattern_utf8);
+			final boolean pattern_has_wildcard = ChannelSftp.isPattern(_pattern, _pattern_utf8);
 
 			if (pattern_has_wildcard) {
 				pattern = _pattern_utf8[0];
@@ -1825,10 +1795,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1876,10 +1843,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 		return null;
 	}
@@ -1904,7 +1868,7 @@ public class ChannelSftp extends ChannelSession {
 				oldpath = _oldpath;
 			}
 
-			if (this.isPattern(newpath)) {
+			if (ChannelSftp.isPattern(newpath)) {
 				throw new SftpException(SSH_FX_FAILURE, newpath);
 			}
 			newpath = Util.unquote(newpath);
@@ -1932,10 +1896,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -1959,7 +1920,7 @@ public class ChannelSftp extends ChannelSession {
 				oldpath = _oldpath;
 			}
 
-			if (this.isPattern(newpath)) {
+			if (ChannelSftp.isPattern(newpath)) {
 				throw new SftpException(SSH_FX_FAILURE, newpath);
 			}
 			newpath = Util.unquote(newpath);
@@ -1987,10 +1948,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2016,7 +1974,7 @@ public class ChannelSftp extends ChannelSession {
 			if (vsize == 1) {
 				newpath = v.elementAt(0);
 			} else { // vsize==0
-				if (this.isPattern(newpath)) {
+				if (ChannelSftp.isPattern(newpath)) {
 					throw new SftpException(SSH_FX_FAILURE, newpath);
 				}
 				newpath = Util.unquote(newpath);
@@ -2045,10 +2003,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2085,10 +2040,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2133,10 +2085,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2161,10 +2110,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2189,10 +2135,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2217,10 +2160,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2258,10 +2198,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2293,10 +2230,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2312,10 +2246,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 		// return null;
 	}
@@ -2345,10 +2276,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 		// return null;
 	}
@@ -2369,10 +2297,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 		// return null;
 	}
@@ -2400,18 +2325,14 @@ public class ChannelSftp extends ChannelSession {
 					this.throwStatusError(this.buf, i);
 				}
 				throw new SftpException(SSH_FX_FAILURE, "");
-			} else {
-				final SftpStatVFS stat = SftpStatVFS.getStatVFS(this.buf);
-				return stat;
 			}
+			final SftpStatVFS stat = SftpStatVFS.getStatVFS(this.buf);
+			return stat;
 		} catch (final Exception e) {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 		// return null;
 	}
@@ -2432,10 +2353,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2463,10 +2381,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2494,9 +2409,9 @@ public class ChannelSftp extends ChannelSession {
 		while (i-- > 0) {
 			str = this.buf.getString(); // absolute path;
 			if (this.server_version <= 3) {
-				final byte[] lname = this.buf.getString(); // long filename
+				this.buf.getString();
 			}
-			final SftpATTRS attr = SftpATTRS.getATTR(this.buf); // dummy attribute
+			SftpATTRS.getATTR(this.buf);
 		}
 		return str;
 	}
@@ -2517,10 +2432,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2546,10 +2458,7 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
@@ -2576,10 +2485,7 @@ public class ChannelSftp extends ChannelSession {
 				if (e instanceof SftpException) {
 					throw (SftpException) e;
 				}
-				if (e instanceof Throwable) {
-					throw new SftpException(SSH_FX_FAILURE, "", e);
-				}
-				throw new SftpException(SSH_FX_FAILURE, "");
+				throw new SftpException(SSH_FX_FAILURE, "", e);
 			}
 		}
 		return this.home;
@@ -2857,7 +2763,7 @@ public class ChannelSftp extends ChannelSession {
 
 		byte[] pattern = null;
 		final byte[][] _pattern_utf8 = new byte[1][];
-		final boolean pattern_has_wildcard = this.isPattern(_pattern, _pattern_utf8);
+		final boolean pattern_has_wildcard = ChannelSftp.isPattern(_pattern, _pattern_utf8);
 
 		if (!pattern_has_wildcard) {
 			if (!dir.equals("/")) {
@@ -2908,9 +2814,6 @@ public class ChannelSftp extends ChannelSession {
 			length -= 4;
 			int count = this.buf.getInt();
 
-			byte[] str;
-			final int flags;
-
 			this.buf.reset();
 			while (count > 0) {
 				if (length > 0) {
@@ -2927,9 +2830,9 @@ public class ChannelSftp extends ChannelSession {
 				final byte[] filename = this.buf.getString();
 				// System.err.println("filename: "+new String(filename));
 				if (this.server_version <= 3) {
-					str = this.buf.getString(); // longname
+					this.buf.getString();
 				}
-				final SftpATTRS attrs = SftpATTRS.getATTR(this.buf);
+				SftpATTRS.getATTR(this.buf);
 
 				byte[] _filename = filename;
 				String f = null;
@@ -2962,7 +2865,7 @@ public class ChannelSftp extends ChannelSession {
 		return null;
 	}
 
-	private boolean isPattern(final byte[] path) {
+	private static boolean isPattern(final byte[] path) {
 		final int length = path.length;
 		int i = 0;
 		while (i < length) {
@@ -2977,7 +2880,7 @@ public class ChannelSftp extends ChannelSession {
 		return false;
 	}
 
-	private Vector<String> glob_local(final String _path) throws Exception {
+	private static Vector<String> glob_local(final String _path) throws Exception {
 		// System.err.println("glob_local: "+_path);
 		final Vector<String> v = new Vector<String>();
 		final byte[] path = Util.str2byte(_path, UTF8);
@@ -3048,9 +2951,8 @@ public class ChannelSftp extends ChannelSession {
 			final byte[] str = buf.getString();
 			// byte[] tag=buf.getString();
 			throw new SftpException(i, Util.byte2str(str, UTF8));
-		} else {
-			throw new SftpException(i, "Failure");
 		}
+		throw new SftpException(i, "Failure");
 	}
 
 	private static boolean isLocalAbsolutePath(final String path) {
@@ -3062,16 +2964,16 @@ public class ChannelSftp extends ChannelSession {
 		super.disconnect();
 	}
 
-	private boolean isPattern(final String path, final byte[][] utf8) {
+	private static boolean isPattern(final String path, final byte[][] utf8) {
 		final byte[] _path = Util.str2byte(path, UTF8);
 		if (utf8 != null) {
 			utf8[0] = _path;
 		}
-		return this.isPattern(_path);
+		return ChannelSftp.isPattern(_path);
 	}
 
-	private boolean isPattern(final String path) {
-		return this.isPattern(path, null);
+	private static boolean isPattern(final String path) {
+		return ChannelSftp.isPattern(path, null);
 	}
 
 	private void fill(final Buffer buf, final int len) throws IOException {
@@ -3114,7 +3016,7 @@ public class ChannelSftp extends ChannelSession {
 
 	private Header header(final Buffer buf, final Header header) throws IOException {
 		buf.rewind();
-		final int i = this.fill(buf.buffer, 0, 9);
+		this.fill(buf.buffer, 0, 9);
 		header.length = buf.getInt() - 5;
 		header.type = buf.getByte() & 0xff;
 		header.rid = buf.getInt();
@@ -3194,14 +3096,11 @@ public class ChannelSftp extends ChannelSession {
 			if (e instanceof SftpException) {
 				throw (SftpException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new SftpException(SSH_FX_FAILURE, "", e);
-			}
-			throw new SftpException(SSH_FX_FAILURE, "");
+			throw new SftpException(SSH_FX_FAILURE, "", e);
 		}
 	}
 
-	public class LsEntry implements Comparable {
+	public class LsEntry implements Comparable<LsEntry> {
 
 		private String filename;
 		private String longname;
@@ -3243,11 +3142,8 @@ public class ChannelSftp extends ChannelSession {
 		}
 
 		@Override
-		public int compareTo(final Object o) throws ClassCastException {
-			if (o instanceof LsEntry) {
-				return this.filename.compareTo(((LsEntry) o).getFilename());
-			}
-			throw new ClassCastException("a decendent of LsEntry must be given.");
+		public int compareTo(final LsEntry o) throws ClassCastException {
+			return this.filename.compareTo(o.getFilename());
 		}
 	}
 

@@ -36,9 +36,12 @@ public class AES128CBC implements Cipher{
   private static final int ivsize=16;
   private static final int bsize=16;
   private javax.crypto.Cipher cipher;    
-  public int getIVSize(){return ivsize;} 
-  public int getBlockSize(){return bsize;}
-  public void init(int mode, byte[] key, byte[] iv) throws Exception{
+  @Override
+public int getIVSize(){return ivsize;} 
+  @Override
+public int getBlockSize(){return bsize;}
+  @Override
+public void init(int mode, byte[] key, byte[] iv) throws Exception{
     String pad="NoPadding";      
     byte[] tmp;
     if(iv.length>ivsize){
@@ -67,9 +70,11 @@ public class AES128CBC implements Cipher{
       throw e;
     }
   }
-  public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
+  @Override
+public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     this.cipher.update(foo, s1, len, bar, s2);
   }
 
-  public boolean isCBC(){return true; }
+  @Override
+public boolean isCBC(){return true; }
 }

@@ -320,10 +320,7 @@ public class ProxySOCKS5 implements Proxy {
 				}
 			} catch (final Exception eee) {}
 			final String message = "ProxySOCKS5: " + e.toString();
-			if (e instanceof Throwable) {
-				throw new JSchException(message, e);
-			}
-			throw new JSchException(message);
+			throw new JSchException(message, e);
 		}
 	}
 

@@ -39,11 +39,13 @@ abstract class HMAC implements MAC {
   protected String algorithm;
   private Mac mac;
 
-  public int getBlockSize() {
+  @Override
+public int getBlockSize() {
     return this.bsize;
   };
 
-  public void init(byte[] key) throws Exception {
+  @Override
+public void init(byte[] key) throws Exception {
     if(key.length>this.bsize){
       byte[] tmp = new byte[this.bsize];
       System.arraycopy(key, 0, tmp, 0, this.bsize);	  
@@ -55,7 +57,8 @@ abstract class HMAC implements MAC {
   } 
 
   private final byte[] tmp = new byte[4];
-  public void update(int i){
+  @Override
+public void update(int i){
     this.tmp[0] = (byte)(i>>>24);
     this.tmp[1] = (byte)(i>>>16);
     this.tmp[2] = (byte)(i>>>8);
@@ -63,11 +66,13 @@ abstract class HMAC implements MAC {
     update(this.tmp, 0, 4);
   }
 
-  public void update(byte foo[], int s, int l){
+  @Override
+public void update(byte foo[], int s, int l){
     this.mac.update(foo, s, l);      
   }
 
-  public void doFinal(byte[] buf, int offset){
+  @Override
+public void doFinal(byte[] buf, int offset){
     try{
       this.mac.doFinal(buf, offset);
     }
@@ -76,7 +81,8 @@ abstract class HMAC implements MAC {
     }
   }
 
-  public String getName(){
+  @Override
+public String getName(){
     return this.name;
   }
 }

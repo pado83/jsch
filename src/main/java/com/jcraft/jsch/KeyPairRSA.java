@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -58,7 +58,7 @@ public class KeyPairRSA extends KeyPair {
 		this.pub_array = pub_array;
 		this.prv_array = prv_array;
 		if (n_array != null) {
-			this.key_size = (new java.math.BigInteger(n_array)).bitLength();
+			this.key_size = new java.math.BigInteger(n_array).bitLength();
 		}
 	}
 
@@ -67,7 +67,7 @@ public class KeyPairRSA extends KeyPair {
 		this.key_size = key_size;
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("keypairgen.rsa"));
-			KeyPairGenRSA keypairgen = (KeyPairGenRSA) (c.newInstance());
+			KeyPairGenRSA keypairgen = (KeyPairGenRSA) c.newInstance();
 			keypairgen.init(key_size);
 			this.pub_array = keypairgen.getE();
 			this.prv_array = keypairgen.getD();
@@ -82,10 +82,7 @@ public class KeyPairRSA extends KeyPair {
 			keypairgen = null;
 		} catch (final Exception e) {
 			// System.err.println("KeyPairRSA: "+e);
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		}
 	}
 
@@ -168,7 +165,7 @@ public class KeyPairRSA extends KeyPair {
 					this.p_array = buf.getMPIntBits();
 					this.q_array = buf.getMPIntBits();
 					if (this.n_array != null) {
-						this.key_size = (new java.math.BigInteger(this.n_array)).bitLength();
+						this.key_size = new java.math.BigInteger(this.n_array).bitLength();
 					}
 
 					this.getEPArray();
@@ -325,7 +322,7 @@ public class KeyPairRSA extends KeyPair {
 			index += length;
 
 			if (this.n_array != null) {
-				this.key_size = (new java.math.BigInteger(this.n_array)).bitLength();
+				this.key_size = new java.math.BigInteger(this.n_array).bitLength();
 			}
 
 		} catch (final Exception e) {
@@ -373,7 +370,7 @@ public class KeyPairRSA extends KeyPair {
 	public byte[] getSignature(final byte[] data) {
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("signature.rsa"));
-			final SignatureRSA rsa = (SignatureRSA) (c.newInstance());
+			final SignatureRSA rsa = (SignatureRSA) c.newInstance();
 			rsa.init();
 			rsa.setPrvKey(this.prv_array, this.n_array);
 
@@ -391,7 +388,7 @@ public class KeyPairRSA extends KeyPair {
 	public Signature getVerifier() {
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("signature.rsa"));
-			final SignatureRSA rsa = (SignatureRSA) (c.newInstance());
+			final SignatureRSA rsa = (SignatureRSA) c.newInstance();
 			rsa.init();
 
 			if (this.pub_array == null && this.n_array == null && this.getPublicKeyBlob() != null) {
@@ -444,21 +441,21 @@ public class KeyPairRSA extends KeyPair {
 
 	private byte[] getEPArray() {
 		if (this.ep_array == null) {
-			this.ep_array = (new BigInteger(this.prv_array)).mod(new BigInteger(this.p_array).subtract(BigInteger.ONE)).toByteArray();
+			this.ep_array = new BigInteger(this.prv_array).mod(new BigInteger(this.p_array).subtract(BigInteger.ONE)).toByteArray();
 		}
 		return this.ep_array;
 	}
 
 	private byte[] getEQArray() {
 		if (this.eq_array == null) {
-			this.eq_array = (new BigInteger(this.prv_array)).mod(new BigInteger(this.q_array).subtract(BigInteger.ONE)).toByteArray();
+			this.eq_array = new BigInteger(this.prv_array).mod(new BigInteger(this.q_array).subtract(BigInteger.ONE)).toByteArray();
 		}
 		return this.eq_array;
 	}
 
 	private byte[] getCArray() {
 		if (this.c_array == null) {
-			this.c_array = (new BigInteger(this.q_array)).modInverse(new BigInteger(this.p_array)).toByteArray();
+			this.c_array = new BigInteger(this.q_array).modInverse(new BigInteger(this.p_array)).toByteArray();
 		}
 		return this.c_array;
 	}

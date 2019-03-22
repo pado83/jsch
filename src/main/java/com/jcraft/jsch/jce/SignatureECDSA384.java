@@ -30,7 +30,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 public class SignatureECDSA384 extends SignatureECDSAN {
-  String getName() {
+  @Override
+String getName() {
     return "ecdsa-sha2-nistp384";
   }
 }

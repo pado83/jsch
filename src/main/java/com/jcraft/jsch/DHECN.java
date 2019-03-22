@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -63,7 +63,7 @@ public abstract class DHECN extends KeyExchange {
 
 		try {
 			final Class<?> c = Class.forName(session.getConfig(this.sha_name));
-			this.sha = (HASH) (c.newInstance());
+			this.sha = (HASH) c.newInstance();
 			this.sha.init();
 		} catch (final Exception e) {
 			System.err.println(e);
@@ -77,16 +77,13 @@ public abstract class DHECN extends KeyExchange {
 
 		try {
 			final Class<?> c = Class.forName(session.getConfig("ecdh-sha2-nistp"));
-			this.ecdh = (ECDH) (c.newInstance());
+			this.ecdh = (ECDH) c.newInstance();
 			this.ecdh.init(this.key_size);
 
 			this.Q_C = this.ecdh.getQ();
 			this.buf.putString(this.Q_C);
 		} catch (final Exception e) {
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		}
 
 		if (V_S == null) { // This is a really ugly hack for Session.checkKexes ;-(
@@ -174,8 +171,8 @@ public abstract class DHECN extends KeyExchange {
 
 				i = 0;
 				j = 0;
-				j = ((this.K_S[i++] << 24) & 0xff000000) | ((this.K_S[i++] << 16) & 0x00ff0000) |
-						((this.K_S[i++] << 8) & 0x0000ff00) | ((this.K_S[i++]) & 0x000000ff);
+				j = this.K_S[i++] << 24 & 0xff000000 | this.K_S[i++] << 16 & 0x00ff0000 |
+						this.K_S[i++] << 8 & 0x0000ff00 | this.K_S[i++] & 0x000000ff;
 				final String alg = Util.byte2str(this.K_S, i, j);
 				i += j;
 

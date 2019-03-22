@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -85,7 +85,7 @@ public class KeyPairECDSA extends KeyPair {
 		this.s_array = s_array;
 		this.prv_array = prv_array;
 		if (prv_array != null) {
-			this.key_size = prv_array.length >= 64 ? 521 : (prv_array.length >= 48 ? 384 : 256);
+			this.key_size = prv_array.length >= 64 ? 521 : prv_array.length >= 48 ? 384 : 256;
 		}
 	}
 
@@ -94,18 +94,15 @@ public class KeyPairECDSA extends KeyPair {
 		this.key_size = key_size;
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("keypairgen.ecdsa"));
-			KeyPairGenECDSA keypairgen = (KeyPairGenECDSA) (c.newInstance());
+			KeyPairGenECDSA keypairgen = (KeyPairGenECDSA) c.newInstance();
 			keypairgen.init(key_size);
 			this.prv_array = keypairgen.getD();
 			this.r_array = keypairgen.getR();
 			this.s_array = keypairgen.getS();
-			this.name = Util.str2byte(names[this.prv_array.length >= 64 ? 2 : (this.prv_array.length >= 48 ? 1 : 0)]);
+			this.name = Util.str2byte(names[this.prv_array.length >= 64 ? 2 : this.prv_array.length >= 48 ? 1 : 0]);
 			keypairgen = null;
 		} catch (final Exception e) {
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		}
 	}
 
@@ -128,11 +125,11 @@ public class KeyPairECDSA extends KeyPair {
 		final byte[] tmp = new byte[1];
 		tmp[0] = 1;
 
-		final byte[] oid = oids[(this.r_array.length >= 64) ? 2 : ((this.r_array.length >= 48) ? 1 : 0)];
+		final byte[] oid = oids[this.r_array.length >= 64 ? 2 : this.r_array.length >= 48 ? 1 : 0];
 
 		byte[] point = toPoint(this.r_array, this.s_array);
 
-		final int bar = ((point.length + 1) & 0x80) == 0 ? 3 : 4;
+		final int bar = (point.length + 1 & 0x80) == 0 ? 3 : 4;
 		final byte[] foo = new byte[point.length + bar];
 		System.arraycopy(point, 0, foo, bar, point.length);
 		foo[0] = 0x03; // BITSTRING
@@ -178,7 +175,7 @@ public class KeyPairECDSA extends KeyPair {
 				/*
 				 * Buffer buf=new Buffer(plain);
 				 * buf.skip(plain.length);
-				 * 
+				 *
 				 * try {
 				 * byte[][] tmp = buf.getBytes(1, "");
 				 * prv_array = tmp[0];
@@ -186,7 +183,7 @@ public class KeyPairECDSA extends KeyPair {
 				 * catch(JSchException e){
 				 * return false;
 				 * }
-				 * 
+				 *
 				 * return true;
 				 */
 				return false;
@@ -281,7 +278,7 @@ public class KeyPairECDSA extends KeyPair {
 			this.s_array = tmp[1];
 
 			if (this.prv_array != null) {
-				this.key_size = this.prv_array.length >= 64 ? 521 : (this.prv_array.length >= 48 ? 384 : 256);
+				this.key_size = this.prv_array.length >= 64 ? 521 : this.prv_array.length >= 48 ? 384 : 256;
 			}
 		} catch (final Exception e) {
 			// System.err.println(e);
@@ -333,7 +330,7 @@ public class KeyPairECDSA extends KeyPair {
 	public byte[] getSignature(final byte[] data) {
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("ecdsa-sha2-" + new String(this.name)));
-			final SignatureECDSA ecdsa = (SignatureECDSA) (c.newInstance());
+			final SignatureECDSA ecdsa = (SignatureECDSA) c.newInstance();
 			ecdsa.init();
 			ecdsa.setPrvKey(this.prv_array);
 
@@ -354,7 +351,7 @@ public class KeyPairECDSA extends KeyPair {
 	public Signature getVerifier() {
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("ecdsa-sha2-" + new String(this.name)));
-			final SignatureECDSA ecdsa = (SignatureECDSA) (c.newInstance());
+			final SignatureECDSA ecdsa = (SignatureECDSA) c.newInstance();
 			ecdsa.init();
 
 			if (this.r_array == null && this.s_array == null && this.getPublicKeyBlob() != null) {

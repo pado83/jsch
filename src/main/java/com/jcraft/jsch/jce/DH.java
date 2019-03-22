@@ -46,11 +46,13 @@ public class DH implements com.jcraft.jsch.DH{
 
   private KeyPairGenerator myKpairGen;
   private KeyAgreement myKeyAgree;
-  public void init() throws Exception{
+  @Override
+public void init() throws Exception{
     this.myKpairGen=KeyPairGenerator.getInstance("DH");
     this.myKeyAgree=KeyAgreement.getInstance("DH");
   }
-  public byte[] getE() throws Exception{
+  @Override
+public byte[] getE() throws Exception{
     if(this.e==null){
       DHParameterSpec dhSkipParamSpec=new DHParameterSpec(this.p, this.g);
       this.myKpairGen.initialize(dhSkipParamSpec);
@@ -61,7 +63,8 @@ public class DH implements com.jcraft.jsch.DH{
     }
     return this.e_array;
   }
-  public byte[] getK() throws Exception{
+  @Override
+public byte[] getK() throws Exception{
     if(this.K==null){
       KeyFactory myKeyFac=KeyFactory.getInstance("DH");
       DHPublicKeySpec keySpec=new DHPublicKeySpec(this.f, this.p, this.g);
@@ -74,15 +77,19 @@ public class DH implements com.jcraft.jsch.DH{
     }
     return this.K_array;
   }
-  public void setP(byte[] p){ setP(new BigInteger(1, p)); }
-  public void setG(byte[] g){ setG(new BigInteger(1, g)); }
-  public void setF(byte[] f){ setF(new BigInteger(1, f)); }
+  @Override
+public void setP(byte[] p){ setP(new BigInteger(1, p)); }
+  @Override
+public void setG(byte[] g){ setG(new BigInteger(1, g)); }
+  @Override
+public void setF(byte[] f){ setF(new BigInteger(1, f)); }
   void setP(BigInteger p){this.p=p;}
   void setG(BigInteger g){this.g=g;}
   void setF(BigInteger f){this.f=f;}
 
   // e, f must be in [1, p-1].
-  public void checkRange() throws Exception {
+  @Override
+public void checkRange() throws Exception {
     /*
     checkRange(e);
     checkRange(f);

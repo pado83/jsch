@@ -39,32 +39,38 @@ public class SignatureRSA implements com.jcraft.jsch.SignatureRSA{
   java.security.Signature signature;
   KeyFactory keyFactory;
 
-  public void init() throws Exception{
+  @Override
+public void init() throws Exception{
     this.signature=java.security.Signature.getInstance("SHA1withRSA");
     this.keyFactory=KeyFactory.getInstance("RSA");
   }     
-  public void setPubKey(byte[] e, byte[] n) throws Exception{
+  @Override
+public void setPubKey(byte[] e, byte[] n) throws Exception{
     RSAPublicKeySpec rsaPubKeySpec = 
 	new RSAPublicKeySpec(new BigInteger(n),
 			     new BigInteger(e));
     PublicKey pubKey=this.keyFactory.generatePublic(rsaPubKeySpec);
     this.signature.initVerify(pubKey);
   }
-  public void setPrvKey(byte[] d, byte[] n) throws Exception{
+  @Override
+public void setPrvKey(byte[] d, byte[] n) throws Exception{
     RSAPrivateKeySpec rsaPrivKeySpec = 
 	new RSAPrivateKeySpec(new BigInteger(n),
 			      new BigInteger(d));
     PrivateKey prvKey = this.keyFactory.generatePrivate(rsaPrivKeySpec);
     this.signature.initSign(prvKey);
   }
-  public byte[] sign() throws Exception{
+  @Override
+public byte[] sign() throws Exception{
     byte[] sig=this.signature.sign();      
     return sig;
   }
-  public void update(byte[] foo) throws Exception{
+  @Override
+public void update(byte[] foo) throws Exception{
    this.signature.update(foo);
   }
-  public boolean verify(byte[] sig) throws Exception{
+  @Override
+public boolean verify(byte[] sig) throws Exception{
     int i=0;
     int j=0;
     byte[] tmp;

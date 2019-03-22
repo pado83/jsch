@@ -269,10 +269,7 @@ public class KnownHosts implements HostKeyRepository {
 			if (e instanceof JSchException) {
 				throw (JSchException) e;
 			}
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		} finally {
 			try {
 				input.close();

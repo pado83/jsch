@@ -35,12 +35,14 @@ public class HMACSHA196 extends HMACSHA1 {
     this.name = "hmac-sha1-96";
   }
 
-  public int getBlockSize(){
+  @Override
+public int getBlockSize(){
     return 12;
   };
 
   private final byte[] _buf20 = new byte[20];
-  public void doFinal(byte[] buf, int offset){
+  @Override
+public void doFinal(byte[] buf, int offset){
     super.doFinal(this._buf20, 0);
     System.arraycopy(this._buf20, 0, buf, offset, 12);
   }

@@ -45,7 +45,8 @@ public class HMACMD5 extends HMAC implements MAC{
     setH(md);
   }
 
-  public String getName(){
+  @Override
+public String getName(){
     return name;
   }
 }

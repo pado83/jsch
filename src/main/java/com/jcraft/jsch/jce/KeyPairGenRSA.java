@@ -43,7 +43,8 @@ public class KeyPairGenRSA implements com.jcraft.jsch.KeyPairGenRSA{
   byte[] p;  // prime p
   byte[] q;  // prime q
 
-  public void init(int key_size) throws Exception{
+  @Override
+public void init(int key_size) throws Exception{
     KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
     keyGen.initialize(key_size, new SecureRandom());
     KeyPair pair = keyGen.generateKeyPair();
@@ -61,12 +62,20 @@ public class KeyPairGenRSA implements com.jcraft.jsch.KeyPairGenRSA{
     this.p=((RSAPrivateCrtKey)prvKey).getPrimeP().toByteArray();
     this.q=((RSAPrivateCrtKey)prvKey).getPrimeQ().toByteArray();
   }
-  public byte[] getD(){return this.d;}
-  public byte[] getE(){return this.e;}
-  public byte[] getN(){return this.n;}
-  public byte[] getC(){return this.c;}
-  public byte[] getEP(){return this.ep;}
-  public byte[] getEQ(){return this.eq;}
-  public byte[] getP(){return this.p;}
-  public byte[] getQ(){return this.q;}
+  @Override
+public byte[] getD(){return this.d;}
+  @Override
+public byte[] getE(){return this.e;}
+  @Override
+public byte[] getN(){return this.n;}
+  @Override
+public byte[] getC(){return this.c;}
+  @Override
+public byte[] getEP(){return this.ep;}
+  @Override
+public byte[] getEQ(){return this.eq;}
+  @Override
+public byte[] getP(){return this.p;}
+  @Override
+public byte[] getQ(){return this.q;}
 }

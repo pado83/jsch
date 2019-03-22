@@ -66,7 +66,8 @@ public class Random implements com.jcraft.jsch.Random{
     }
     */
   }
-  public void fill(byte[] foo, int start, int len){
+  @Override
+public void fill(byte[] foo, int start, int len){
     /*
     // This case will not become true in our usage.
     if(start==0 && foo.length==len){

@@ -127,7 +127,7 @@ public class Session implements Runnable {
 			64 + // maximum mac length
 			32; // margin for deflater; deflater may inflate data
 
-	private java.util.Hashtable<String, String> config = null;
+	private java.util.Hashtable<Object, Object> config = null;
 
 	private Proxy proxy = null;
 	private UserInfo userinfo;
@@ -2193,10 +2193,7 @@ public class Session implements Runnable {
 				this.write(packet);
 			} catch (final Exception e) {
 				this.grr.setThread(null);
-				if (e instanceof Throwable) {
-					throw new JSchException(e.toString(), e);
-				}
-				throw new JSchException(e.toString());
+				throw new JSchException(e.toString(), e);
 			}
 
 			int count = 0;
@@ -2348,16 +2345,16 @@ public class Session implements Runnable {
 	}
 
 	public void setConfig(final java.util.Properties newconf) {
-		this.setConfig((java.util.Hashtable) newconf);
+		this.setConfig((java.util.Hashtable<Object, Object>) newconf);
 	}
 
-	public void setConfig(final java.util.Hashtable<String, String> newconf) {
+	public void setConfig(final java.util.Hashtable<Object, Object> newconf) {
 		synchronized (this.lock) {
 			if (this.config == null) {
-				this.config = new java.util.Hashtable<String, String>();
+				this.config = new java.util.Hashtable<Object, Object>();
 			}
-			for (final java.util.Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
-				final String key = e.nextElement();
+			for (final java.util.Enumeration<Object> e = newconf.keys(); e.hasMoreElements();) {
+				final Object key = e.nextElement();
 				this.config.put(key, newconf.get(key));
 			}
 		}
@@ -2366,7 +2363,7 @@ public class Session implements Runnable {
 	public void setConfig(final String key, final String value) {
 		synchronized (this.lock) {
 			if (this.config == null) {
-				this.config = new java.util.Hashtable<String, String>();
+				this.config = new java.util.Hashtable<Object, Object>();
 			}
 			this.config.put(key, value);
 		}
@@ -2411,10 +2408,7 @@ public class Session implements Runnable {
 			this.socket.setSoTimeout(timeout);
 			this.timeout = timeout;
 		} catch (final Exception e) {
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		}
 	}
 
@@ -2646,7 +2640,7 @@ public class Session implements Runnable {
 		final String[] _sigs = Util.split(sigs, ",");
 		for (final String _sig : _sigs) {
 			try {
-				final Class c = Class.forName(JSch.getConfig(_sig));
+				final Class<?> c = Class.forName(JSch.getConfig(_sig));
 				final Signature sig = (Signature) c.newInstance();
 				sig.init();
 			} catch (final Exception e) {

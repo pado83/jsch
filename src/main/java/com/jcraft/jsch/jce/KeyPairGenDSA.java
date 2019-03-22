@@ -39,7 +39,8 @@ public class KeyPairGenDSA implements com.jcraft.jsch.KeyPairGenDSA{
   byte[] q;
   byte[] g;
 
-  public void init(int key_size) throws Exception{
+  @Override
+public void init(int key_size) throws Exception{
     KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
     keyGen.initialize(key_size, new SecureRandom());
     KeyPair pair = keyGen.generateKeyPair();
@@ -54,9 +55,14 @@ public class KeyPairGenDSA implements com.jcraft.jsch.KeyPairGenDSA{
     this.q=params.getQ().toByteArray();
     this.g=params.getG().toByteArray();
   }
-  public byte[] getX(){return this.x;}
-  public byte[] getY(){return this.y;}
-  public byte[] getP(){return this.p;}
-  public byte[] getQ(){return this.q;}
-  public byte[] getG(){return this.g;}
+  @Override
+public byte[] getX(){return this.x;}
+  @Override
+public byte[] getY(){return this.y;}
+  @Override
+public byte[] getP(){return this.p;}
+  @Override
+public byte[] getQ(){return this.q;}
+  @Override
+public byte[] getG(){return this.g;}
 }

@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -57,7 +57,7 @@ public class KeyPairDSA extends KeyPair {
 		this.pub_array = pub_array;
 		this.prv_array = prv_array;
 		if (P_array != null) {
-			this.key_size = (new java.math.BigInteger(P_array)).bitLength();
+			this.key_size = new java.math.BigInteger(P_array).bitLength();
 		}
 	}
 
@@ -66,7 +66,7 @@ public class KeyPairDSA extends KeyPair {
 		this.key_size = key_size;
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("keypairgen.dsa"));
-			KeyPairGenDSA keypairgen = (KeyPairGenDSA) (c.newInstance());
+			KeyPairGenDSA keypairgen = (KeyPairGenDSA) c.newInstance();
 			keypairgen.init(key_size);
 			this.P_array = keypairgen.getP();
 			this.Q_array = keypairgen.getQ();
@@ -77,10 +77,7 @@ public class KeyPairDSA extends KeyPair {
 			keypairgen = null;
 		} catch (final Exception e) {
 			// System.err.println("KeyPairDSA: "+e);
-			if (e instanceof Throwable) {
-				throw new JSchException(e.toString(), e);
-			}
-			throw new JSchException(e.toString());
+			throw new JSchException(e.toString(), e);
 		}
 	}
 
@@ -134,7 +131,7 @@ public class KeyPairDSA extends KeyPair {
 					this.pub_array = buf.getMPIntBits();
 					this.prv_array = buf.getMPIntBits();
 					if (this.P_array != null) {
-						this.key_size = (new java.math.BigInteger(this.P_array)).bitLength();
+						this.key_size = new java.math.BigInteger(this.P_array).bitLength();
 					}
 					return true;
 				}
@@ -249,7 +246,7 @@ public class KeyPairDSA extends KeyPair {
 			index += length;
 
 			if (this.P_array != null) {
-				this.key_size = (new java.math.BigInteger(this.P_array)).bitLength();
+				this.key_size = new java.math.BigInteger(this.P_array).bitLength();
 			}
 		} catch (final Exception e) {
 			// System.err.println(e);
@@ -299,7 +296,7 @@ public class KeyPairDSA extends KeyPair {
 	public byte[] getSignature(final byte[] data) {
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("signature.dss"));
-			final SignatureDSA dsa = (SignatureDSA) (c.newInstance());
+			final SignatureDSA dsa = (SignatureDSA) c.newInstance();
 			dsa.init();
 			dsa.setPrvKey(this.prv_array, this.P_array, this.Q_array, this.G_array);
 
@@ -319,7 +316,7 @@ public class KeyPairDSA extends KeyPair {
 	public Signature getVerifier() {
 		try {
 			final Class<?> c = Class.forName(JSch.getConfig("signature.dss"));
-			final SignatureDSA dsa = (SignatureDSA) (c.newInstance());
+			final SignatureDSA dsa = (SignatureDSA) c.newInstance();
 			dsa.init();
 
 			if (this.pub_array == null && this.P_array == null && this.getPublicKeyBlob() != null) {

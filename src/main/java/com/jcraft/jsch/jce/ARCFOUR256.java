@@ -37,9 +37,12 @@ public class ARCFOUR256 implements Cipher{
   private static final int bsize=32;
   private static final int skip=1536; 
   private javax.crypto.Cipher cipher;    
-  public int getIVSize(){return ivsize;} 
-  public int getBlockSize(){return bsize;}
-  public void init(int mode, byte[] key, byte[] iv) throws Exception{
+  @Override
+public int getIVSize(){return ivsize;} 
+  @Override
+public int getBlockSize(){return bsize;}
+  @Override
+public void init(int mode, byte[] key, byte[] iv) throws Exception{
     byte[] tmp;
     if(key.length>bsize){
       tmp=new byte[bsize];
@@ -65,8 +68,10 @@ public class ARCFOUR256 implements Cipher{
       throw e;
     }
   }
-  public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
+  @Override
+public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
     this.cipher.update(foo, s1, len, bar, s2);
   }
-  public boolean isCBC(){return false; }
+  @Override
+public boolean isCBC(){return false; }
 }
