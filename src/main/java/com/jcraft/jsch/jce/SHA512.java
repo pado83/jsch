@@ -35,15 +35,15 @@ public class SHA512 implements com.jcraft.jsch.HASH {
   MessageDigest md;
   public int getBlockSize(){return 64;}
   public void init() throws Exception {
-    try{ md=MessageDigest.getInstance("SHA-512"); }
+    try{ this.md=MessageDigest.getInstance("SHA-512"); }
     catch(Exception e){
       System.err.println(e);
     }
   }
   public void update(byte[] foo, int start, int len) throws Exception {
-    md.update(foo, start, len);
+    this.md.update(foo, start, len);
   }
   public byte[] digest() throws Exception {
-    return md.digest();
+    return this.md.digest();
   }
 }

@@ -86,7 +86,7 @@ class UserAuthKeyboardInteractive extends UserAuth {
 					this.buf.getByte();
 					this.buf.getByte();
 					final byte[] _message = this.buf.getString();
-					final byte[] lang = this.buf.getString();
+					this.buf.getString();
 					final String message = Util.byte2str(_message);
 					if (this.userinfo != null) {
 						this.userinfo.showMessage(message);
@@ -121,7 +121,7 @@ class UserAuthKeyboardInteractive extends UserAuth {
 					this.buf.getByte();
 					final String name = Util.byte2str(this.buf.getString());
 					final String instruction = Util.byte2str(this.buf.getString());
-					final String languate_tag = Util.byte2str(this.buf.getString());
+					Util.byte2str(this.buf.getString());
 					final int num = this.buf.getInt();
 					final String[] prompt = new String[num];
 					final boolean[] echo = new boolean[num];

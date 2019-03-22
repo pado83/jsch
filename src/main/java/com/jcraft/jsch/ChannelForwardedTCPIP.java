@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -35,7 +35,7 @@ import java.util.Vector;
 
 public class ChannelForwardedTCPIP extends Channel {
 
-	private static Vector pool = new Vector();
+	private static Vector<Config> pool = new Vector<Config>();
 
 	static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
 	// static private final int LOCAL_WINDOW_SIZE_MAX=0x100000;
@@ -61,7 +61,7 @@ public class ChannelForwardedTCPIP extends Channel {
 		try {
 			if (this.config instanceof ConfigDaemon) {
 				final ConfigDaemon _config = (ConfigDaemon) this.config;
-				final Class c = Class.forName(_config.target);
+				final Class<?> c = Class.forName(_config.target);
 				this.daemon = (ForwardedTCPIPDaemon) c.newInstance();
 
 				final PipedOutputStream out = new PipedOutputStream();
@@ -72,7 +72,7 @@ public class ChannelForwardedTCPIP extends Channel {
 				new Thread(this.daemon).start();
 			} else {
 				final ConfigLHost _config = (ConfigLHost) this.config;
-				this.socket = (_config.factory == null) ? Util.createSocket(_config.target, _config.lport, TIMEOUT) : _config.factory.createSocket(_config.target, _config.lport);
+				this.socket = _config.factory == null ? Util.createSocket(_config.target, _config.lport, TIMEOUT) : _config.factory.createSocket(_config.target, _config.lport);
 				this.socket.setTcpNoDelay(true);
 				this.io.setInputStream(this.socket.getInputStream());
 				this.io.setOutputStream(this.socket.getOutputStream());
@@ -129,8 +129,8 @@ public class ChannelForwardedTCPIP extends Channel {
 		this.setRemotePacketSize(buf.getInt());
 		final byte[] addr = buf.getString();
 		final int port = buf.getInt();
-		final byte[] orgaddr = buf.getString();
-		final int orgport = buf.getInt();
+		buf.getString();
+		buf.getInt();
 
 		/*
 		 * System.err.println("addr: "+Util.byte2str(addr));
@@ -162,7 +162,7 @@ public class ChannelForwardedTCPIP extends Channel {
 	private static Config getPort(final Session session, final String address_to_bind, final int rport) {
 		synchronized (pool) {
 			for (int i = 0; i < pool.size(); i++) {
-				final Config bar = (Config) (pool.elementAt(i));
+				final Config bar = pool.elementAt(i);
 				if (bar.session != session) {
 					continue;
 				}
@@ -182,10 +182,10 @@ public class ChannelForwardedTCPIP extends Channel {
 	}
 
 	static String[] getPortForwarding(final Session session) {
-		final Vector foo = new Vector();
+		final Vector<String> foo = new Vector<String>();
 		synchronized (pool) {
 			for (int i = 0; i < pool.size(); i++) {
-				final Config config = (Config) (pool.elementAt(i));
+				final Config config = pool.elementAt(i);
 				if (config instanceof ConfigDaemon) {
 					foo.addElement(config.allocated_rport + ":" + config.target + ":");
 				} else {
@@ -195,7 +195,7 @@ public class ChannelForwardedTCPIP extends Channel {
 		}
 		final String[] bar = new String[foo.size()];
 		for (int i = 0; i < foo.size(); i++) {
-			bar[i] = (String) (foo.elementAt(i));
+			bar[i] = foo.elementAt(i);
 		}
 		return bar;
 	}
@@ -308,7 +308,7 @@ public class ChannelForwardedTCPIP extends Channel {
 		synchronized (pool) {
 			rport = new int[pool.size()];
 			for (int i = 0; i < pool.size(); i++) {
-				final Config config = (Config) (pool.elementAt(i));
+				final Config config = pool.elementAt(i);
 				if (config.session == session) {
 					rport[count++] = config.rport; // ((Integer)bar[1]).intValue();
 				}
@@ -320,11 +320,11 @@ public class ChannelForwardedTCPIP extends Channel {
 	}
 
 	public int getRemotePort() {
-		return (this.config != null ? this.config.rport : 0);
+		return this.config != null ? this.config.rport : 0;
 	}
 
 	private void setSocketFactory(final SocketFactory factory) {
-		if (this.config != null && (this.config instanceof ConfigLHost)) {
+		if (this.config != null && this.config instanceof ConfigLHost) {
 			((ConfigLHost) this.config).factory = factory;
 		}
 	}

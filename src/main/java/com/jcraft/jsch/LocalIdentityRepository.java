@@ -35,7 +35,7 @@ class LocalIdentityRepository implements IdentityRepository {
 
 	private static final String name = "Local Identity Repository";
 
-	private final Vector identities = new Vector();
+	private final Vector<Identity> identities = new Vector<Identity>();
 	private final JSch jsch;
 
 	LocalIdentityRepository(final JSch jsch) {
@@ -53,9 +53,9 @@ class LocalIdentityRepository implements IdentityRepository {
 	}
 
 	@Override
-	public synchronized Vector getIdentities() {
+	public synchronized Vector<Identity> getIdentities() {
 		this.removeDupulicates();
-		final Vector v = new Vector();
+		final Vector<Identity> v = new Vector<Identity>();
 		for (int i = 0; i < this.identities.size(); i++) {
 			v.addElement(this.identities.elementAt(i));
 		}
@@ -70,10 +70,10 @@ class LocalIdentityRepository implements IdentityRepository {
 				return;
 			}
 			for (int i = 0; i < this.identities.size(); i++) {
-				final byte[] blob2 = ((Identity) this.identities.elementAt(i)).getPublicKeyBlob();
+				final byte[] blob2 = this.identities.elementAt(i).getPublicKeyBlob();
 				if (blob2 != null && Util.array_equals(blob1, blob2)) {
 					if (!identity.isEncrypted() &&
-							((Identity) this.identities.elementAt(i)).isEncrypted()) {
+							this.identities.elementAt(i).isEncrypted()) {
 						this.remove(blob2);
 					} else {
 						return;
@@ -110,7 +110,7 @@ class LocalIdentityRepository implements IdentityRepository {
 			return false;
 		}
 		for (int i = 0; i < this.identities.size(); i++) {
-			final Identity _identity = (Identity) (this.identities.elementAt(i));
+			final Identity _identity = (this.identities.elementAt(i));
 			final byte[] _blob = _identity.getPublicKeyBlob();
 			if (_blob == null || !Util.array_equals(blob, _blob)) {
 				continue;
@@ -125,26 +125,26 @@ class LocalIdentityRepository implements IdentityRepository {
 	@Override
 	public synchronized void removeAll() {
 		for (int i = 0; i < this.identities.size(); i++) {
-			final Identity identity = (Identity) (this.identities.elementAt(i));
+			final Identity identity = (this.identities.elementAt(i));
 			identity.clear();
 		}
 		this.identities.removeAllElements();
 	}
 
 	private void removeDupulicates() {
-		final Vector v = new Vector();
+		final Vector<byte[]> v = new Vector<byte[]>();
 		final int len = this.identities.size();
 		if (len == 0) {
 			return;
 		}
 		for (int i = 0; i < len; i++) {
-			final Identity foo = (Identity) this.identities.elementAt(i);
+			final Identity foo = this.identities.elementAt(i);
 			final byte[] foo_blob = foo.getPublicKeyBlob();
 			if (foo_blob == null) {
 				continue;
 			}
 			for (int j = i + 1; j < len; j++) {
-				final Identity bar = (Identity) this.identities.elementAt(j);
+				final Identity bar = this.identities.elementAt(j);
 				final byte[] bar_blob = bar.getPublicKeyBlob();
 				if (bar_blob == null) {
 					continue;
@@ -157,7 +157,7 @@ class LocalIdentityRepository implements IdentityRepository {
 			}
 		}
 		for (int i = 0; i < v.size(); i++) {
-			this.remove((byte[]) v.elementAt(i));
+			this.remove(v.elementAt(i));
 		}
 	}
 }

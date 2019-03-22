@@ -50,8 +50,6 @@ public class ProxySOCKS4 implements Proxy {
 	private OutputStream out;
 	private Socket socket;
 	private String user;
-	private String passwd;
-
 	public ProxySOCKS4(final String proxy_host) {
 		int port = DEFAULTPORT;
 		String host = proxy_host;
@@ -72,7 +70,6 @@ public class ProxySOCKS4 implements Proxy {
 
 	public void setUserPasswd(final String user, final String passwd) {
 		this.user = user;
-		this.passwd = passwd;
 	}
 
 	@Override

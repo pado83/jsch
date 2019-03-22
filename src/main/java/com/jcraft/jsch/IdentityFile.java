@@ -33,7 +33,6 @@ import java.io.UnsupportedEncodingException;
 
 class IdentityFile implements Identity {
 
-	private final JSch jsch;
 	private KeyPair kpair;
 	private final String identity;
 
@@ -49,7 +48,6 @@ class IdentityFile implements Identity {
 	}
 
 	private IdentityFile(final JSch jsch, final String name, final KeyPair kpair) throws JSchException {
-		this.jsch = jsch;
 		this.identity = name;
 		this.kpair = kpair;
 	}

@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Vector;
 
 public abstract class Channel implements Runnable {
 
@@ -47,7 +48,7 @@ public abstract class Channel implements Runnable {
 	static final int SSH_OPEN_RESOURCE_SHORTAGE = 4;
 
 	static int index = 0;
-	private static java.util.Vector pool = new java.util.Vector();
+	private static java.util.Vector<Channel> pool = new Vector<Channel>();
 
 	static Channel getChannel(final String type) {
 		if (type.equals("session")) {
@@ -83,7 +84,7 @@ public abstract class Channel implements Runnable {
 	static Channel getChannel(final int id, final Session session) {
 		synchronized (pool) {
 			for (int i = 0; i < pool.size(); i++) {
-				final Channel c = (Channel) (pool.elementAt(i));
+				final Channel c = pool.elementAt(i);
 				if (c.id == id && c.session == session) {
 					return c;
 				}
@@ -408,14 +409,14 @@ public abstract class Channel implements Runnable {
 			if (size < len) {
 				final int datasize = this.buffer.length - size;
 				int foo = this.buffer.length;
-				while ((foo - datasize) < len) {
+				while (foo - datasize < len) {
 					foo *= 2;
 				}
 
 				if (foo > this.max_buffer_size) {
 					foo = this.max_buffer_size;
 				}
-				if ((foo - datasize) < len) {
+				if (foo - datasize < len) {
 					return;
 				}
 
@@ -427,7 +428,7 @@ public abstract class Channel implements Runnable {
 						System.arraycopy(this.buffer, 0, tmp, 0, this.in);
 						System.arraycopy(this.buffer, this.out,
 								tmp, tmp.length - (this.buffer.length - this.out),
-								(this.buffer.length - this.out));
+								this.buffer.length - this.out);
 						this.out = tmp.length - (this.buffer.length - this.out);
 					}
 				} else if (this.in == this.out) {
@@ -532,21 +533,21 @@ public abstract class Channel implements Runnable {
 
 	/*
 	 * http://www1.ietf.org/internet-drafts/draft-ietf-secsh-connect-24.txt
-	 * 
+	 *
 	 * 5.3 Closing a Channel
 	 * When a party will no longer send more data to a channel, it SHOULD
 	 * send SSH_MSG_CHANNEL_EOF.
-	 * 
+	 *
 	 * byte SSH_MSG_CHANNEL_EOF
 	 * uint32 recipient_channel
-	 * 
+	 *
 	 * No explicit response is sent to this message. However, the
 	 * application may send EOF to whatever is at the other end of the
 	 * channel. Note that the channel remains open after this message, and
 	 * more data may still be sent in the other direction. This message
 	 * does not consume window space and can be sent even if no window space
 	 * is available.
-	 * 
+	 *
 	 * When either party wishes to terminate the channel, it sends
 	 * SSH_MSG_CHANNEL_CLOSE. Upon receiving this message, a party MUST
 	 * send back a SSH_MSG_CHANNEL_CLOSE unless it has already sent this
@@ -555,13 +556,13 @@ public abstract class Channel implements Runnable {
 	 * the party may then reuse the channel number. A party MAY send
 	 * SSH_MSG_CHANNEL_CLOSE without having sent or received
 	 * SSH_MSG_CHANNEL_EOF.
-	 * 
+	 *
 	 * byte SSH_MSG_CHANNEL_CLOSE
 	 * uint32 recipient_channel
-	 * 
+	 *
 	 * This message does not consume window space and can be sent even if no
 	 * window space is available.
-	 * 
+	 *
 	 * It is recommended that any data sent before this message is delivered
 	 * to the actual destination, if possible.
 	 */
@@ -603,7 +604,7 @@ public abstract class Channel implements Runnable {
 			channels = new Channel[pool.size()];
 			for (int i = 0; i < pool.size(); i++) {
 				try {
-					final Channel c = ((Channel) (pool.elementAt(i)));
+					final Channel c = pool.elementAt(i);
 					if (c.session == session) {
 						channels[count++] = c;
 					}
@@ -703,7 +704,7 @@ public abstract class Channel implements Runnable {
 		PassiveOutputStream(final PipedInputStream in,
 				final boolean resizable_buffer) throws IOException {
 			super(in);
-			if (resizable_buffer && (in instanceof MyPipedInputStream)) {
+			if (resizable_buffer && in instanceof MyPipedInputStream) {
 				this._sink = (MyPipedInputStream) in;
 			}
 		}
@@ -812,7 +813,7 @@ public abstract class Channel implements Runnable {
 					_session.isConnected() &&
 					retry > 0) {
 				if (timeout > 0L) {
-					if ((System.currentTimeMillis() - start) > timeout) {
+					if (System.currentTimeMillis() - start > timeout) {
 						retry = 0;
 						continue;
 					}

@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -30,163 +30,193 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
-import java.security.*;
-import java.security.spec.*;
+import java.security.AlgorithmParameters;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPrivateKeySpec;
+import java.security.spec.ECPublicKeySpec;
+
 import com.jcraft.jsch.Buffer;
 
 public abstract class SignatureECDSAN implements com.jcraft.jsch.SignatureECDSA {
 
-  Signature signature;
-  KeyFactory keyFactory;
+	Signature signature;
+	KeyFactory keyFactory;
 
-  abstract String getName();
+	abstract String getName();
 
-  public void init() throws Exception{
-    String name = getName();
-    String foo="SHA256withECDSA";
-    if(name.equals("ecdsa-sha2-nistp384")) foo="SHA384withECDSA";
-    else if(name.equals("ecdsa-sha2-nistp521")) foo="SHA512withECDSA";
-    signature=java.security.Signature.getInstance(foo);
-    keyFactory=KeyFactory.getInstance("EC");
-  }
-  
-  public void setPubKey(byte[] r, byte[] s) throws Exception{
+	@Override
+	public void init() throws Exception {
+		final String name = this.getName();
+		String foo = "SHA256withECDSA";
+		if (name.equals("ecdsa-sha2-nistp384")) {
+			foo = "SHA384withECDSA";
+		} else if (name.equals("ecdsa-sha2-nistp521")) {
+			foo = "SHA512withECDSA";
+		}
+		this.signature = java.security.Signature.getInstance(foo);
+		this.keyFactory = KeyFactory.getInstance("EC");
+	}
 
-    // r and s must be unsigned values.
-    r=insert0(r);
-    s=insert0(s);
+	@Override
+	public void setPubKey(byte[] r, byte[] s) throws Exception {
 
-    String name="secp256r1";
-    if(r.length>=64) name="secp521r1";
-    else if(r.length>=48) name="secp384r1";
+		// r and s must be unsigned values.
+		r = SignatureECDSAN.insert0(r);
+		s = SignatureECDSAN.insert0(s);
 
-    AlgorithmParameters param = AlgorithmParameters.getInstance("EC");
-    param.init(new ECGenParameterSpec(name));
-    ECParameterSpec ecparam =
-      (ECParameterSpec)param.getParameterSpec(ECParameterSpec.class);
-    ECPoint w = new ECPoint(new BigInteger(1, r), new BigInteger(1, s));
-    PublicKey pubKey = 
-      keyFactory.generatePublic(new ECPublicKeySpec(w, ecparam));
-    signature.initVerify(pubKey);
-  }
+		String name = "secp256r1";
+		if (r.length >= 64) {
+			name = "secp521r1";
+		} else if (r.length >= 48) {
+			name = "secp384r1";
+		}
 
-  public void setPrvKey(byte[] d) throws Exception{
+		final AlgorithmParameters param = AlgorithmParameters.getInstance("EC");
+		param.init(new ECGenParameterSpec(name));
+		final ECParameterSpec ecparam = param.getParameterSpec(ECParameterSpec.class);
+		final ECPoint w = new ECPoint(new BigInteger(1, r), new BigInteger(1, s));
+		final PublicKey pubKey = this.keyFactory.generatePublic(new ECPublicKeySpec(w, ecparam));
+		this.signature.initVerify(pubKey);
+	}
 
-    // d must be unsigned value.
-    d=insert0(d);
+	@Override
+	public void setPrvKey(byte[] d) throws Exception {
 
-    String name="secp256r1";
-    if(d.length>=64) name="secp521r1";
-    else if(d.length>=48) name="secp384r1";
+		// d must be unsigned value.
+		d = SignatureECDSAN.insert0(d);
 
-    AlgorithmParameters param = AlgorithmParameters.getInstance("EC");
-    param.init(new ECGenParameterSpec(name));
-    ECParameterSpec ecparam =
-      (ECParameterSpec)param.getParameterSpec(ECParameterSpec.class);
-    BigInteger _d = new BigInteger(1, d);
-    PrivateKey prvKey = 
-      keyFactory.generatePrivate(new ECPrivateKeySpec(_d, ecparam));
-    signature.initSign(prvKey);
-  }
-  public byte[] sign() throws Exception{
-    byte[] sig=signature.sign();
+		String name = "secp256r1";
+		if (d.length >= 64) {
+			name = "secp521r1";
+		} else if (d.length >= 48) {
+			name = "secp384r1";
+		}
 
-    // It seems that the output from SunEC is in ASN.1,
-    // so we have to convert it.
-    if(sig[0]==0x30 &&                                      // in ASN.1
-       ((sig[1]+2 == sig.length) ||
-        ((sig[1]&0x80)!=0 && (sig[2]&0xff)+3==sig.length))){// 2bytes for len
+		final AlgorithmParameters param = AlgorithmParameters.getInstance("EC");
+		param.init(new ECGenParameterSpec(name));
+		final ECParameterSpec ecparam = param.getParameterSpec(ECParameterSpec.class);
+		final BigInteger _d = new BigInteger(1, d);
+		final PrivateKey prvKey = this.keyFactory.generatePrivate(new ECPrivateKeySpec(_d, ecparam));
+		this.signature.initSign(prvKey);
+	}
 
-      int index=3;
-      if((sig[1]&0x80)!=0 && (sig[2]&0xff)+3==sig.length)
-        index=4;
+	@Override
+	public byte[] sign() throws Exception {
+		byte[] sig = this.signature.sign();
 
-      byte[] r = new byte[sig[index]];
-      byte[] s = new byte[sig[index+2+sig[index]]];
-      System.arraycopy(sig, index+1, r, 0, r.length);
-      System.arraycopy(sig, index+3+sig[index], s, 0, s.length);
+		// It seems that the output from SunEC is in ASN.1,
+		// so we have to convert it.
+		if (sig[0] == 0x30 && // in ASN.1
+				(sig[1] + 2 == sig.length ||
+						(sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length)) {// 2bytes for len
 
-      r = chop0(r);
-      s = chop0(s);
+			int index = 3;
+			if ((sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length) {
+				index = 4;
+			}
 
-      Buffer buf = new Buffer();
-      buf.putMPInt(r);
-      buf.putMPInt(s);
+			byte[] r = new byte[sig[index]];
+			byte[] s = new byte[sig[index + 2 + sig[index]]];
+			System.arraycopy(sig, index + 1, r, 0, r.length);
+			System.arraycopy(sig, index + 3 + sig[index], s, 0, s.length);
 
-      sig=new byte[buf.getLength()];
-      buf.setOffSet(0);
-      buf.getByte(sig);
-    }
+			r = SignatureECDSAN.chop0(r);
+			s = SignatureECDSAN.chop0(s);
 
-    return sig;
-  }
-  public void update(byte[] foo) throws Exception{
-   signature.update(foo);
-  }
-  public boolean verify(byte[] sig) throws Exception{
+			final Buffer buf = new Buffer();
+			buf.putMPInt(r);
+			buf.putMPInt(s);
 
-    // It seems that SunEC expects ASN.1 data,
-    // so we have to convert it.
-    if(!(sig[0]==0x30 &&                                    // not in ASN.1
-         ((sig[1]+2 == sig.length) ||
-          ((sig[1]&0x80)!=0 && (sig[2]&0xff)+3==sig.length)))) {
-      Buffer b = new Buffer(sig);
+			sig = new byte[buf.getLength()];
+			buf.setOffSet(0);
+			buf.getByte(sig);
+		}
 
-      b.getString();  // ecdsa-sha2-nistp256
-      b.getInt();
+		return sig;
+	}
 
-      byte[] r = b.getMPInt();
-      byte[] s = b.getMPInt();
+	@Override
+	public void update(final byte[] foo) throws Exception {
+		this.signature.update(foo);
+	}
 
-      r=insert0(r);
-      s=insert0(s);
+	@Override
+	public boolean verify(byte[] sig) throws Exception {
 
-      byte[] asn1 = null;
-      if(r.length<64){
-        asn1 = new byte[6+r.length+s.length];
-        asn1[0] = (byte)0x30;
-        asn1[1] = (byte)(4+r.length+s.length);
-        asn1[2] = (byte)0x02;
-        asn1[3] = (byte)r.length;
-        System.arraycopy(r, 0, asn1, 4, r.length);
-        asn1[r.length+4] = (byte)0x02;
-        asn1[r.length+5] = (byte)s.length;
-        System.arraycopy(s, 0, asn1, (6+r.length), s.length);
-      }
-      else {
-        asn1 = new byte[6+r.length+s.length+1];
-        asn1[0] = (byte)0x30;
-        asn1[1] = (byte)0x81;
-        asn1[2] = (byte)(4+r.length+s.length);
-        asn1[3] = (byte)0x02;
-        asn1[4] = (byte)r.length;
-        System.arraycopy(r, 0, asn1, 5, r.length);
-        asn1[r.length+5] = (byte)0x02;
-        asn1[r.length+6] = (byte)s.length;
-        System.arraycopy(s, 0, asn1, (7+r.length), s.length);
-      }
-      sig=asn1;
-    }
+		// It seems that SunEC expects ASN.1 data,
+		// so we have to convert it.
+		if (!(sig[0] == 0x30 && // not in ASN.1
+				(sig[1] + 2 == sig.length ||
+						(sig[1] & 0x80) != 0 && (sig[2] & 0xff) + 3 == sig.length))) {
+			final Buffer b = new Buffer(sig);
 
-    return signature.verify(sig); 
-  }
+			b.getString(); // ecdsa-sha2-nistp256
+			b.getInt();
 
-  private byte[] insert0(byte[] buf){
-    if ((buf[0] & 0x80) == 0) return buf;
-    byte[] tmp = new byte[buf.length+1];
-    System.arraycopy(buf, 0, tmp, 1, buf.length);
-    bzero(buf);
-    return tmp;
-  }
-  private byte[] chop0(byte[] buf){
-    if(buf[0]!=0) return buf;
-    byte[] tmp = new byte[buf.length-1];
-    System.arraycopy(buf, 1, tmp, 0, tmp.length);
-    bzero(buf);
-    return tmp;
-  }
+			byte[] r = b.getMPInt();
+			byte[] s = b.getMPInt();
 
-  private void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
-  }
+			r = SignatureECDSAN.insert0(r);
+			s = SignatureECDSAN.insert0(s);
+
+			byte[] asn1 = null;
+			if (r.length < 64) {
+				asn1 = new byte[6 + r.length + s.length];
+				asn1[0] = (byte) 0x30;
+				asn1[1] = (byte) (4 + r.length + s.length);
+				asn1[2] = (byte) 0x02;
+				asn1[3] = (byte) r.length;
+				System.arraycopy(r, 0, asn1, 4, r.length);
+				asn1[r.length + 4] = (byte) 0x02;
+				asn1[r.length + 5] = (byte) s.length;
+				System.arraycopy(s, 0, asn1, 6 + r.length, s.length);
+			} else {
+				asn1 = new byte[6 + r.length + s.length + 1];
+				asn1[0] = (byte) 0x30;
+				asn1[1] = (byte) 0x81;
+				asn1[2] = (byte) (4 + r.length + s.length);
+				asn1[3] = (byte) 0x02;
+				asn1[4] = (byte) r.length;
+				System.arraycopy(r, 0, asn1, 5, r.length);
+				asn1[r.length + 5] = (byte) 0x02;
+				asn1[r.length + 6] = (byte) s.length;
+				System.arraycopy(s, 0, asn1, 7 + r.length, s.length);
+			}
+			sig = asn1;
+		}
+
+		return this.signature.verify(sig);
+	}
+
+	private static byte[] insert0(final byte[] buf) {
+		if ((buf[0] & 0x80) == 0) {
+			return buf;
+		}
+		final byte[] tmp = new byte[buf.length + 1];
+		System.arraycopy(buf, 0, tmp, 1, buf.length);
+		bzero(buf);
+		return tmp;
+	}
+
+	private static byte[] chop0(final byte[] buf) {
+		if (buf[0] != 0) {
+			return buf;
+		}
+		final byte[] tmp = new byte[buf.length - 1];
+		System.arraycopy(buf, 1, tmp, 0, tmp.length);
+		bzero(buf);
+		return tmp;
+	}
+
+	private static void bzero(final byte[] buf) {
+		for (int i = 0; i < buf.length; i++) {
+			buf[i] = 0;
+		}
+	}
 }

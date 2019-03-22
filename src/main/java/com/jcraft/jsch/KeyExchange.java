@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -173,8 +173,8 @@ public abstract class KeyExchange {
 	public String getFingerPrint() {
 		HASH hash = null;
 		try {
-			final Class c = Class.forName(this.session.getConfig("md5"));
-			hash = (HASH) (c.newInstance());
+			final Class<?> c = Class.forName(this.session.getConfig("md5"));
+			hash = (HASH) c.newInstance();
 		} catch (final Exception e) {
 			System.err.println("getFingerPrint: " + e);
 		}
@@ -208,9 +208,8 @@ public abstract class KeyExchange {
 			final byte[] tmp = new byte[secret.length - 1];
 			System.arraycopy(secret, 1, tmp, 0, tmp.length);
 			return this.normalize(tmp);
-		} else {
-			return secret;
 		}
+		return secret;
 	}
 
 	protected boolean verify(final String alg, final byte[] K_S, final int index,
@@ -228,14 +227,14 @@ public abstract class KeyExchange {
 			this.type = this.RSA;
 			this.key_alg_name = alg;
 
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
 			ee = tmp;
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
@@ -243,8 +242,8 @@ public abstract class KeyExchange {
 
 			SignatureRSA sig = null;
 			try {
-				final Class c = Class.forName(this.session.getConfig("signature.rsa"));
-				sig = (SignatureRSA) (c.newInstance());
+				final Class<?> c = Class.forName(this.session.getConfig("signature.rsa"));
+				sig = (SignatureRSA) c.newInstance();
 				sig.init();
 			} catch (final Exception e) {
 				System.err.println(e);
@@ -267,26 +266,26 @@ public abstract class KeyExchange {
 			this.type = this.DSS;
 			this.key_alg_name = alg;
 
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
 			p = tmp;
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
 			q = tmp;
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
 			g = tmp;
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
@@ -294,8 +293,8 @@ public abstract class KeyExchange {
 
 			SignatureDSA sig = null;
 			try {
-				final Class c = Class.forName(this.session.getConfig("signature.dss"));
-				sig = (SignatureDSA) (c.newInstance());
+				final Class<?> c = Class.forName(this.session.getConfig("signature.dss"));
+				sig = (SignatureDSA) c.newInstance();
 				sig.init();
 			} catch (final Exception e) {
 				System.err.println(e);
@@ -319,13 +318,13 @@ public abstract class KeyExchange {
 			this.type = this.ECDSA;
 			this.key_alg_name = alg;
 
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			tmp = new byte[j];
 			System.arraycopy(K_S, i, tmp, 0, j);
 			i += j;
-			j = ((K_S[i++] << 24) & 0xff000000) | ((K_S[i++] << 16) & 0x00ff0000) |
-					((K_S[i++] << 8) & 0x0000ff00) | ((K_S[i++]) & 0x000000ff);
+			j = K_S[i++] << 24 & 0xff000000 | K_S[i++] << 16 & 0x00ff0000 |
+					K_S[i++] << 8 & 0x0000ff00 | K_S[i++] & 0x000000ff;
 			i++;
 			tmp = new byte[(j - 1) / 2];
 			System.arraycopy(K_S, i, tmp, 0, tmp.length);
@@ -338,8 +337,8 @@ public abstract class KeyExchange {
 
 			SignatureECDSA sig = null;
 			try {
-				final Class c = Class.forName(this.session.getConfig(alg));
-				sig = (SignatureECDSA) (c.newInstance());
+				final Class<?> c = Class.forName(this.session.getConfig(alg));
+				sig = (SignatureECDSA) c.newInstance();
 				sig.init();
 			} catch (final Exception e) {
 				System.err.println(e);

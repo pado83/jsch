@@ -93,7 +93,7 @@ public class KeyPairECDSA extends KeyPair {
 	void generate(final int key_size) throws JSchException {
 		this.key_size = key_size;
 		try {
-			final Class c = Class.forName(JSch.getConfig("keypairgen.ecdsa"));
+			final Class<?> c = Class.forName(JSch.getConfig("keypairgen.ecdsa"));
 			KeyPairGenECDSA keypairgen = (KeyPairGenECDSA) (c.newInstance());
 			keypairgen.init(key_size);
 			this.prv_array = keypairgen.getD();
@@ -332,7 +332,7 @@ public class KeyPairECDSA extends KeyPair {
 	@Override
 	public byte[] getSignature(final byte[] data) {
 		try {
-			final Class c = Class.forName(JSch.getConfig("ecdsa-sha2-" + new String(this.name)));
+			final Class<?> c = Class.forName(JSch.getConfig("ecdsa-sha2-" + new String(this.name)));
 			final SignatureECDSA ecdsa = (SignatureECDSA) (c.newInstance());
 			ecdsa.init();
 			ecdsa.setPrvKey(this.prv_array);
@@ -353,7 +353,7 @@ public class KeyPairECDSA extends KeyPair {
 	@Override
 	public Signature getVerifier() {
 		try {
-			final Class c = Class.forName(JSch.getConfig("ecdsa-sha2-" + new String(this.name)));
+			final Class<?> c = Class.forName(JSch.getConfig("ecdsa-sha2-" + new String(this.name)));
 			final SignatureECDSA ecdsa = (SignatureECDSA) (c.newInstance());
 			ecdsa.init();
 

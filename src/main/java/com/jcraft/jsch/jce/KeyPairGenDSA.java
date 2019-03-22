@@ -46,17 +46,17 @@ public class KeyPairGenDSA implements com.jcraft.jsch.KeyPairGenDSA{
     PublicKey pubKey=pair.getPublic();
     PrivateKey prvKey=pair.getPrivate();
 
-    x=((DSAPrivateKey)prvKey).getX().toByteArray();
-    y=((DSAPublicKey)pubKey).getY().toByteArray();
+    this.x=((DSAPrivateKey)prvKey).getX().toByteArray();
+    this.y=((DSAPublicKey)pubKey).getY().toByteArray();
 
     DSAParams params=((DSAKey)prvKey).getParams();
-    p=params.getP().toByteArray();
-    q=params.getQ().toByteArray();
-    g=params.getG().toByteArray();
+    this.p=params.getP().toByteArray();
+    this.q=params.getQ().toByteArray();
+    this.g=params.getG().toByteArray();
   }
-  public byte[] getX(){return x;}
-  public byte[] getY(){return y;}
-  public byte[] getP(){return p;}
-  public byte[] getQ(){return q;}
-  public byte[] getG(){return g;}
+  public byte[] getX(){return this.x;}
+  public byte[] getY(){return this.y;}
+  public byte[] getP(){return this.p;}
+  public byte[] getQ(){return this.q;}
+  public byte[] getG(){return this.g;}
 }

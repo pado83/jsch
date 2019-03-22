@@ -41,7 +41,7 @@ public interface IdentityRepository {
 
 	public int getStatus();
 
-	public Vector getIdentities();
+	public Vector<Identity> getIdentities();
 
 	public boolean add(byte[] identity);
 
@@ -59,7 +59,7 @@ public interface IdentityRepository {
 	static class Wrapper implements IdentityRepository {
 
 		private final IdentityRepository ir;
-		private final Vector cache = new Vector();
+		private final Vector<Identity> cache = new Vector<Identity>();
 		private boolean keep_in_cache = false;
 
 		Wrapper(final IdentityRepository ir) {
@@ -73,38 +73,38 @@ public interface IdentityRepository {
 
 		@Override
 		public String getName() {
-			return ir.getName();
+			return this.ir.getName();
 		}
 
 		@Override
 		public int getStatus() {
-			return ir.getStatus();
+			return this.ir.getStatus();
 		}
 
 		@Override
 		public boolean add(final byte[] identity) {
-			return ir.add(identity);
+			return this.ir.add(identity);
 		}
 
 		@Override
 		public boolean remove(final byte[] blob) {
-			return ir.remove(blob);
+			return this.ir.remove(blob);
 		}
 
 		@Override
 		public void removeAll() {
-			cache.removeAllElements();
-			ir.removeAll();
+			this.cache.removeAllElements();
+			this.ir.removeAll();
 		}
 
 		@Override
-		public Vector getIdentities() {
-			final Vector result = new Vector();
-			for (int i = 0; i < cache.size(); i++) {
-				final Identity identity = (Identity) (cache.elementAt(i));
+		public Vector<Identity> getIdentities() {
+			final Vector<Identity> result = new Vector<Identity>();
+			for (int i = 0; i < this.cache.size(); i++) {
+				final Identity identity = (this.cache.elementAt(i));
 				result.add(identity);
 			}
-			final Vector tmp = ir.getIdentities();
+			final Vector<Identity> tmp = this.ir.getIdentities();
 			for (int i = 0; i < tmp.size(); i++) {
 				result.add(tmp.elementAt(i));
 			}
@@ -112,24 +112,24 @@ public interface IdentityRepository {
 		}
 
 		void add(final Identity identity) {
-			if (!keep_in_cache &&
+			if (!this.keep_in_cache &&
 					!identity.isEncrypted() && (identity instanceof IdentityFile)) {
 				try {
-					ir.add(((IdentityFile) identity).getKeyPair().forSSHAgent());
+					this.ir.add(((IdentityFile) identity).getKeyPair().forSSHAgent());
 				} catch (final JSchException e) {
 					// an exception will not be thrown.
 				}
 			} else {
-				cache.addElement(identity);
+				this.cache.addElement(identity);
 			}
 		}
 
 		void check() {
-			if (cache.size() > 0) {
-				final Object[] identities = cache.toArray();
+			if (this.cache.size() > 0) {
+				final Object[] identities = this.cache.toArray();
 				for (int i = 0; i < identities.length; i++) {
 					final Identity identity = (Identity) (identities[i]);
-					cache.removeElement(identity);
+					this.cache.removeElement(identity);
 					add(identity);
 				}
 			}

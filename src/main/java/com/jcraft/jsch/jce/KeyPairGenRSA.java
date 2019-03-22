@@ -51,22 +51,22 @@ public class KeyPairGenRSA implements com.jcraft.jsch.KeyPairGenRSA{
     PublicKey pubKey=pair.getPublic();
     PrivateKey prvKey=pair.getPrivate();
 
-    d=((RSAPrivateKey)prvKey).getPrivateExponent().toByteArray();
-    e=((RSAPublicKey)pubKey).getPublicExponent().toByteArray();
-    n=((RSAPrivateKey)prvKey).getModulus().toByteArray();
+    this.d=((RSAPrivateKey)prvKey).getPrivateExponent().toByteArray();
+    this.e=((RSAPublicKey)pubKey).getPublicExponent().toByteArray();
+    this.n=((RSAPrivateKey)prvKey).getModulus().toByteArray();
 
-    c=((RSAPrivateCrtKey)prvKey).getCrtCoefficient().toByteArray();
-    ep=((RSAPrivateCrtKey)prvKey).getPrimeExponentP().toByteArray();
-    eq=((RSAPrivateCrtKey)prvKey).getPrimeExponentQ().toByteArray();
-    p=((RSAPrivateCrtKey)prvKey).getPrimeP().toByteArray();
-    q=((RSAPrivateCrtKey)prvKey).getPrimeQ().toByteArray();
+    this.c=((RSAPrivateCrtKey)prvKey).getCrtCoefficient().toByteArray();
+    this.ep=((RSAPrivateCrtKey)prvKey).getPrimeExponentP().toByteArray();
+    this.eq=((RSAPrivateCrtKey)prvKey).getPrimeExponentQ().toByteArray();
+    this.p=((RSAPrivateCrtKey)prvKey).getPrimeP().toByteArray();
+    this.q=((RSAPrivateCrtKey)prvKey).getPrimeQ().toByteArray();
   }
-  public byte[] getD(){return d;}
-  public byte[] getE(){return e;}
-  public byte[] getN(){return n;}
-  public byte[] getC(){return c;}
-  public byte[] getEP(){return ep;}
-  public byte[] getEQ(){return eq;}
-  public byte[] getP(){return p;}
-  public byte[] getQ(){return q;}
+  public byte[] getD(){return this.d;}
+  public byte[] getE(){return this.e;}
+  public byte[] getN(){return this.n;}
+  public byte[] getC(){return this.c;}
+  public byte[] getEP(){return this.ep;}
+  public byte[] getEQ(){return this.eq;}
+  public byte[] getP(){return this.p;}
+  public byte[] getQ(){return this.q;}
 }

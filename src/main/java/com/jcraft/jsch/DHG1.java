@@ -79,7 +79,7 @@ public class DHG1 extends KeyExchange {
 		this.I_C = I_C;
 
 		try {
-			final Class c = Class.forName(session.getConfig("sha-1"));
+			final Class<?> c = Class.forName(session.getConfig("sha-1"));
 			this.sha = (HASH) (c.newInstance());
 			this.sha.init();
 		} catch (final Exception e) {
@@ -90,7 +90,7 @@ public class DHG1 extends KeyExchange {
 		this.packet = new Packet(this.buf);
 
 		try {
-			final Class c = Class.forName(session.getConfig("dh"));
+			final Class<?> c = Class.forName(session.getConfig("dh"));
 			this.dh = (DH) (c.newInstance());
 			this.dh.init();
 		} catch (final Exception e) {

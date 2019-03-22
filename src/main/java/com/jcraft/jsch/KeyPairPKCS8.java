@@ -49,11 +49,6 @@ public class KeyPairPKCS8 extends KeyPair {
 			(byte) 0x0d, (byte) 0x01, (byte) 0x05, (byte) 0x0d
 	};
 
-	private static final byte[] pbkdf2 = {
-			(byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86, (byte) 0xf7,
-			(byte) 0x0d, (byte) 0x01, (byte) 0x05, (byte) 0x0c
-	};
-
 	private static final byte[] aes128cbc = {
 			(byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01, (byte) 0x65,
 			(byte) 0x03, (byte) 0x04, (byte) 0x01, (byte) 0x02
@@ -120,7 +115,7 @@ public class KeyPairPKCS8 extends KeyPair {
 		 */
 
 		try {
-			final Vector values = new Vector();
+			final Vector<byte[]> values = new Vector<byte[]>();
 
 			ASN1[] contents = null;
 			ASN1 asn1 = new ASN1(plain);
@@ -172,10 +167,10 @@ public class KeyPairPKCS8 extends KeyPair {
 					values.addElement(asn1.getContent());
 				}
 
-				final byte[] P_array = (byte[]) values.elementAt(0);
-				final byte[] Q_array = (byte[]) values.elementAt(1);
-				final byte[] G_array = (byte[]) values.elementAt(2);
-				final byte[] prv_array = (byte[]) values.elementAt(3);
+				final byte[] P_array = values.elementAt(0);
+				final byte[] Q_array = values.elementAt(1);
+				final byte[] G_array = values.elementAt(2);
+				final byte[] prv_array = values.elementAt(3);
 				// Y = g^X mode p
 				final byte[] pub_array = (new BigInteger(G_array)).modPow(new BigInteger(prv_array), new BigInteger(P_array)).toByteArray();
 
@@ -293,7 +288,7 @@ public class KeyPairPKCS8 extends KeyPair {
 				final ASN1 pbkdf = contents[0];
 				final ASN1 encryptfunc = contents[1];
 				contents = pbkdf.getContents();
-				final byte[] pbkdfid = contents[0].getContent();
+				contents[0].getContent();
 				final ASN1 pbkdffunc = contents[1];
 				contents = pbkdffunc.getContents();
 				salt = contents[0].getContent();
@@ -316,7 +311,7 @@ public class KeyPairPKCS8 extends KeyPair {
 
 			byte[] key = null;
 			try {
-				final Class c = Class.forName(JSch.getConfig("pbkdf"));
+				final Class<?> c = Class.forName(JSch.getConfig("pbkdf"));
 				final PBKDF tmp = (PBKDF) (c.newInstance());
 				key = tmp.getKey(_passphrase, salt, iterations, cipher.getBlockSize());
 			} catch (final Exception ee) {}
@@ -353,7 +348,7 @@ public class KeyPairPKCS8 extends KeyPair {
 			} else if (Util.array_equals(id, aes256cbc)) {
 				name = "aes256-cbc";
 			}
-			final Class c = Class.forName(JSch.getConfig(name));
+			final Class<?> c = Class.forName(JSch.getConfig(name));
 			cipher = (Cipher) (c.newInstance());
 		} catch (final Exception e) {
 			if (JSch.getLogger().isEnabled(Logger.FATAL)) {

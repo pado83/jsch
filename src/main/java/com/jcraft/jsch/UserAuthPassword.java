@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -40,7 +40,7 @@ class UserAuthPassword extends UserAuth {
 		byte[] password = session.password;
 		String dest = this.username + "@" + session.host;
 		if (session.port != 22) {
-			dest += (":" + session.port);
+			dest += ":" + session.port;
 		}
 
 		try {
@@ -100,7 +100,7 @@ class UserAuthPassword extends UserAuth {
 						this.buf.getByte();
 						this.buf.getByte();
 						final byte[] _message = this.buf.getString();
-						final byte[] lang = this.buf.getString();
+						this.buf.getString();
 						final String message = Util.byte2str(_message);
 						if (this.userinfo != null) {
 							this.userinfo.showMessage(message);
@@ -112,7 +112,7 @@ class UserAuthPassword extends UserAuth {
 						this.buf.getByte();
 						this.buf.getByte();
 						final byte[] instruction = this.buf.getString();
-						final byte[] tag = this.buf.getString();
+						this.buf.getString();
 						if (this.userinfo == null ||
 								!(this.userinfo instanceof UIKeyboardInteractive)) {
 							if (this.userinfo != null) {
@@ -171,11 +171,10 @@ class UserAuthPassword extends UserAuth {
 						}
 						session.auth_failures++;
 						break;
-					} else {
-						// System.err.println("USERAUTH fail ("+buf.getCommand()+")");
-						// throw new JSchException("USERAUTH fail ("+buf.getCommand()+")");
-						return false;
 					}
+					// System.err.println("USERAUTH fail ("+buf.getCommand()+")");
+					// throw new JSchException("USERAUTH fail ("+buf.getCommand()+")");
+					return false;
 				}
 
 				if (password != null) {

@@ -120,7 +120,7 @@ public class HostKey {
 	public String getFingerPrint(final JSch jsch) {
 		HASH hash = null;
 		try {
-			final Class c = Class.forName(JSch.getConfig("md5"));
+			final Class<?> c = Class.forName(JSch.getConfig("md5"));
 			hash = (HASH) c.newInstance();
 		} catch (final Exception e) {
 			System.err.println("getFingerPrint: " + e);

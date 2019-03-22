@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -39,7 +39,7 @@ public class JSch {
 	 */
 	public static final String VERSION = "0.1.54";
 
-	static java.util.Hashtable config = new java.util.Hashtable();
+	static java.util.Hashtable<String, String> config = new java.util.Hashtable<String, String>();
 	static {
 		config.put("kex", "ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group1-sha1");
 		config.put("server_host_key", "ssh-rsa,ssh-dss,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521");
@@ -139,7 +139,7 @@ public class JSch {
 		config.put("ClearAllForwardings", "no");
 	}
 
-	private final java.util.Vector sessionPool = new java.util.Vector();
+	private final java.util.Vector<Session> sessionPool = new java.util.Vector<Session>();
 
 	private final IdentityRepository defaultIdentityRepository = new LocalIdentityRepository(this);
 
@@ -496,9 +496,9 @@ public class JSch {
 	 */
 	@Deprecated
 	public void removeIdentity(final String name) throws JSchException {
-		final Vector identities = this.identityRepository.getIdentities();
+		final Vector<?> identities = this.identityRepository.getIdentities();
 		for (int i = 0; i < identities.size(); i++) {
-			final Identity identity = (Identity) (identities.elementAt(i));
+			final Identity identity = (Identity) identities.elementAt(i);
 			if (!identity.getName().equals(name)) {
 				continue;
 			}
@@ -528,11 +528,11 @@ public class JSch {
 	 *
 	 * @throws JSchException if identityReposory has problems.
 	 */
-	public Vector getIdentityNames() throws JSchException {
-		final Vector foo = new Vector();
-		final Vector identities = this.identityRepository.getIdentities();
+	public Vector<String> getIdentityNames() throws JSchException {
+		final Vector<String> foo = new Vector<String>();
+		final Vector<?> identities = this.identityRepository.getIdentities();
 		for (int i = 0; i < identities.size(); i++) {
-			final Identity identity = (Identity) (identities.elementAt(i));
+			final Identity identity = (Identity) identities.elementAt(i);
 			foo.addElement(identity.getName());
 		}
 		return foo;
@@ -555,7 +555,7 @@ public class JSch {
 	 */
 	public static String getConfig(final String key) {
 		synchronized (config) {
-			return (String) (config.get(key));
+			return config.get(key);
 		}
 	}
 
@@ -564,11 +564,11 @@ public class JSch {
 	 *
 	 * @param newconf configurations
 	 */
-	public static void setConfig(final java.util.Hashtable newconf) {
+	public static void setConfig(final java.util.Hashtable<String, String> newconf) {
 		synchronized (config) {
-			for (final java.util.Enumeration e = newconf.keys(); e.hasMoreElements();) {
-				final String key = (String) (e.nextElement());
-				config.put(key, (newconf.get(key)));
+			for (final java.util.Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
+				final String key = e.nextElement();
+				config.put(key, newconf.get(key));
 			}
 		}
 	}

@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Vector;
 
 class Util {
 
@@ -55,17 +56,17 @@ class Util {
 			final byte[] foo = new byte[length];
 			int j = 0;
 			for (int i = start; i < start + length; i += 4) {
-				foo[j] = (byte) ((val(buf[i]) << 2) | ((val(buf[i + 1]) & 0x30) >>> 4));
+				foo[j] = (byte) (val(buf[i]) << 2 | (val(buf[i + 1]) & 0x30) >>> 4);
 				if (buf[i + 2] == (byte) '=') {
 					j++;
 					break;
 				}
-				foo[j + 1] = (byte) (((val(buf[i + 1]) & 0x0f) << 4) | ((val(buf[i + 2]) & 0x3c) >>> 2));
+				foo[j + 1] = (byte) ((val(buf[i + 1]) & 0x0f) << 4 | (val(buf[i + 2]) & 0x3c) >>> 2);
 				if (buf[i + 3] == (byte) '=') {
 					j += 2;
 					break;
 				}
-				foo[j + 2] = (byte) (((val(buf[i + 2]) & 0x03) << 6) | (val(buf[i + 3]) & 0x3f));
+				foo[j + 2] = (byte) ((val(buf[i + 2]) & 0x03) << 6 | val(buf[i + 3]) & 0x3f);
 				j += 3;
 			}
 			final byte[] bar = new byte[j];
@@ -81,33 +82,33 @@ class Util {
 		final byte[] tmp = new byte[length * 2];
 		int i, j, k;
 
-		int foo = (length / 3) * 3 + start;
+		int foo = length / 3 * 3 + start;
 		i = 0;
 		for (j = start; j < foo; j += 3) {
-			k = (buf[j] >>> 2) & 0x3f;
+			k = buf[j] >>> 2 & 0x3f;
 			tmp[i++] = b64[k];
-			k = (buf[j] & 0x03) << 4 | (buf[j + 1] >>> 4) & 0x0f;
+			k = (buf[j] & 0x03) << 4 | buf[j + 1] >>> 4 & 0x0f;
 			tmp[i++] = b64[k];
-			k = (buf[j + 1] & 0x0f) << 2 | (buf[j + 2] >>> 6) & 0x03;
+			k = (buf[j + 1] & 0x0f) << 2 | buf[j + 2] >>> 6 & 0x03;
 			tmp[i++] = b64[k];
 			k = buf[j + 2] & 0x3f;
 			tmp[i++] = b64[k];
 		}
 
-		foo = (start + length) - foo;
+		foo = start + length - foo;
 		if (foo == 1) {
-			k = (buf[j] >>> 2) & 0x3f;
+			k = buf[j] >>> 2 & 0x3f;
 			tmp[i++] = b64[k];
-			k = ((buf[j] & 0x03) << 4) & 0x3f;
+			k = (buf[j] & 0x03) << 4 & 0x3f;
 			tmp[i++] = b64[k];
 			tmp[i++] = (byte) '=';
 			tmp[i++] = (byte) '=';
 		} else if (foo == 2) {
-			k = (buf[j] >>> 2) & 0x3f;
+			k = buf[j] >>> 2 & 0x3f;
 			tmp[i++] = b64[k];
-			k = (buf[j] & 0x03) << 4 | (buf[j + 1] >>> 4) & 0x0f;
+			k = (buf[j] & 0x03) << 4 | buf[j + 1] >>> 4 & 0x0f;
 			tmp[i++] = b64[k];
-			k = ((buf[j + 1] & 0x0f) << 2) & 0x3f;
+			k = (buf[j + 1] & 0x0f) << 2 & 0x3f;
 			tmp[i++] = b64[k];
 			tmp[i++] = (byte) '=';
 		}
@@ -123,7 +124,7 @@ class Util {
 			return null;
 		}
 		final byte[] buf = Util.str2byte(foo);
-		final java.util.Vector bar = new java.util.Vector();
+		final java.util.Vector<String> bar = new Vector<String>();
 		int start = 0;
 		int index;
 		while (true) {
@@ -138,7 +139,7 @@ class Util {
 		}
 		final String[] result = new String[bar.size()];
 		for (int i = 0; i < result.length; i++) {
-			result[i] = (String) (bar.elementAt(i));
+			result[i] = bar.elementAt(i);
 		}
 		return result;
 	}
@@ -284,8 +285,7 @@ class Util {
 	static String quote(final String path) {
 		final byte[] _path = str2byte(path);
 		int count = 0;
-		for (int i = 0; i < _path.length; i++) {
-			final byte b = _path[i];
+		for (final byte b : _path) {
 			if (b == '\\' || b == '?' || b == '*') {
 				count++;
 			}
@@ -349,8 +349,8 @@ class Util {
 			int bar;
 			for (int i = 0; i < foo.length; i++) {
 				bar = foo[i] & 0xff;
-				sb.append(chars[(bar >>> 4) & 0xf]);
-				sb.append(chars[(bar) & 0xf]);
+				sb.append(chars[bar >>> 4 & 0xf]);
+				sb.append(chars[bar & 0xf]);
 				if (i + 1 < foo.length) {
 					sb.append(":");
 				}
@@ -555,7 +555,7 @@ class Util {
 		final File file = new File(_file);
 		final FileInputStream fis = new FileInputStream(_file);
 		try {
-			final byte[] result = new byte[(int) (file.length())];
+			final byte[] result = new byte[(int) file.length()];
 			int len = 0;
 			while (true) {
 				final int i = fis.read(result, len, result.length - len);
@@ -567,9 +567,7 @@ class Util {
 			fis.close();
 			return result;
 		} finally {
-			if (fis != null) {
-				fis.close();
-			}
+			fis.close();
 		}
 	}
 }

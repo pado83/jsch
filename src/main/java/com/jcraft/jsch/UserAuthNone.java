@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -57,7 +57,7 @@ class UserAuthNone extends UserAuth {
 		this.buf = session.read(this.buf);
 		int command = this.buf.getCommand();
 
-		final boolean result = (command == SSH_MSG_SERVICE_ACCEPT);
+		final boolean result = command == SSH_MSG_SERVICE_ACCEPT;
 
 		if (JSch.getLogger().isEnabled(Logger.INFO)) {
 			JSch.getLogger().log(Logger.INFO,
@@ -94,7 +94,7 @@ class UserAuthNone extends UserAuth {
 				this.buf.getByte();
 				this.buf.getByte();
 				final byte[] _message = this.buf.getString();
-				final byte[] lang = this.buf.getString();
+				this.buf.getString();
 				final String message = Util.byte2str(_message);
 				if (this.userinfo != null) {
 					try {
@@ -108,7 +108,7 @@ class UserAuthNone extends UserAuth {
 				this.buf.getByte();
 				this.buf.getByte();
 				final byte[] foo = this.buf.getString();
-				final int partial_success = this.buf.getByte();
+				this.buf.getByte();
 				this.methods = Util.byte2str(foo);
 				// System.err.println("UserAuthNONE: "+methods+
 				// " partial_success:"+(partial_success!=0));
@@ -117,10 +117,9 @@ class UserAuthNone extends UserAuth {
 				// }
 
 				break;
-			} else {
-				// System.err.println("USERAUTH fail ("+command+")");
-				throw new JSchException("USERAUTH fail (" + command + ")");
 			}
+			// System.err.println("USERAUTH fail ("+command+")");
+			throw new JSchException("USERAUTH fail (" + command + ")");
 		}
 		// throw new JSchException("USERAUTH fail");
 		return false;

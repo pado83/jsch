@@ -53,56 +53,56 @@ class HMAC{
 
   protected void setH(MessageDigest md){
     this.md=md;
-    bsize=md.getDigestLength();
+    this.bsize=md.getDigestLength();
   }
 
-  public int getBlockSize(){return bsize;};
+  public int getBlockSize(){return this.bsize;};
   public void init(byte[] key) throws Exception{
-    md.reset();
-    if(key.length>bsize){
-      byte[] tmp=new byte[bsize];
-      System.arraycopy(key, 0, tmp, 0, bsize);	  
+    this.md.reset();
+    if(key.length>this.bsize){
+      byte[] tmp=new byte[this.bsize];
+      System.arraycopy(key, 0, tmp, 0, this.bsize);	  
       key=tmp;
     }
 
     /* if key is longer than B bytes reset it to key=MD5(key) */
     if(key.length>B){
-      md.update(key, 0, key.length);
-      key=md.digest();
+      this.md.update(key, 0, key.length);
+      key=this.md.digest();
     }
 
-    k_ipad=new byte[B];
-    System.arraycopy(key, 0, k_ipad, 0, key.length);
-    k_opad=new byte[B];
-    System.arraycopy(key, 0, k_opad, 0, key.length);
+    this.k_ipad=new byte[B];
+    System.arraycopy(key, 0, this.k_ipad, 0, key.length);
+    this.k_opad=new byte[B];
+    System.arraycopy(key, 0, this.k_opad, 0, key.length);
 
     /* XOR key with ipad and opad values */
     for(int i=0; i<B; i++) {
-      k_ipad[i]^=(byte)0x36;
-      k_opad[i]^=(byte)0x5c;
+      this.k_ipad[i]^=(byte)0x36;
+      this.k_opad[i]^=(byte)0x5c;
     }
 
-    md.update(k_ipad, 0, B);
+    this.md.update(this.k_ipad, 0, B);
   }
 
   private final byte[] tmp=new byte[4];
   public void update(int i){
-    tmp[0]=(byte)(i>>>24);
-    tmp[1]=(byte)(i>>>16);
-    tmp[2]=(byte)(i>>>8);
-    tmp[3]=(byte)i;
-    update(tmp, 0, 4);
+    this.tmp[0]=(byte)(i>>>24);
+    this.tmp[1]=(byte)(i>>>16);
+    this.tmp[2]=(byte)(i>>>8);
+    this.tmp[3]=(byte)i;
+    update(this.tmp, 0, 4);
   }
 
   public void update(byte foo[], int s, int l){
-    md.update(foo, s, l);
+    this.md.update(foo, s, l);
   }
 
   public void doFinal(byte[] buf, int offset){
-    byte[] result=md.digest();
-    md.update(k_opad, 0, B);
-    md.update(result, 0, bsize);
-    try{md.digest(buf, offset, bsize);}catch(Exception e){}
-    md.update(k_ipad, 0, B);
+    byte[] result=this.md.digest();
+    this.md.update(this.k_opad, 0, B);
+    this.md.update(result, 0, this.bsize);
+    try{this.md.digest(buf, offset, this.bsize);}catch(Exception e){}
+    this.md.update(this.k_ipad, 0, B);
   }
 }

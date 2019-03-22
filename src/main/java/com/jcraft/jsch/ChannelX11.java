@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -30,6 +30,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch;
 
 import java.net.Socket;
+import java.util.Hashtable;
 
 class ChannelX11 extends Channel {
 
@@ -46,8 +47,8 @@ class ChannelX11 extends Channel {
 	static byte[] cookie = null;
 	private static byte[] cookie_hex = null;
 
-	private static java.util.Hashtable faked_cookie_pool = new java.util.Hashtable();
-	private static java.util.Hashtable faked_cookie_hex_pool = new java.util.Hashtable();
+	private static java.util.Hashtable<Session, byte[]> faked_cookie_pool = new Hashtable<Session, byte[]>();
+	private static java.util.Hashtable<Session, byte[]> faked_cookie_hex_pool = new Hashtable<Session, byte[]>();
 
 	private static byte[] table = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
 			0x61, 0x62, 0x63, 0x64, 0x65, 0x66 };
@@ -67,8 +68,8 @@ class ChannelX11 extends Channel {
 		cookie_hex = Util.str2byte(foo);
 		cookie = new byte[16];
 		for (int i = 0; i < 16; i++) {
-			cookie[i] = (byte) (((revtable(cookie_hex[i * 2]) << 4) & 0xf0) |
-					((revtable(cookie_hex[i * 2 + 1])) & 0xf));
+			cookie[i] = (byte) (revtable(cookie_hex[i * 2]) << 4 & 0xf0 |
+					revtable(cookie_hex[i * 2 + 1]) & 0xf);
 		}
 	}
 
@@ -82,7 +83,7 @@ class ChannelX11 extends Channel {
 
 	static byte[] getFakedCookie(final Session session) {
 		synchronized (faked_cookie_hex_pool) {
-			byte[] foo = (byte[]) faked_cookie_hex_pool.get(session);
+			byte[] foo = faked_cookie_hex_pool.get(session);
 			if (foo == null) {
 				final Random random = Session.random;
 				foo = new byte[16];
@@ -99,8 +100,8 @@ class ChannelX11 extends Channel {
 				faked_cookie_pool.put(session, foo);
 				final byte[] bar = new byte[32];
 				for (int i = 0; i < 16; i++) {
-					bar[2 * i] = table[(foo[i] >>> 4) & 0xf];
-					bar[2 * i + 1] = table[(foo[i]) & 0xf];
+					bar[2 * i] = table[foo[i] >>> 4 & 0xf];
+					bar[2 * i + 1] = table[foo[i] & 0xf];
 				}
 				faked_cookie_hex_pool.put(session, bar);
 				foo = bar;
@@ -225,22 +226,22 @@ class ChannelX11 extends Channel {
 			int dlen = (foo[s + 8] & 0xff) * 256 + (foo[s + 9] & 0xff);
 
 			if ((foo[s] & 0xff) == 0x42) {} else if ((foo[s] & 0xff) == 0x6c) {
-				plen = ((plen >>> 8) & 0xff) | ((plen << 8) & 0xff00);
-				dlen = ((dlen >>> 8) & 0xff) | ((dlen << 8) & 0xff00);
+				plen = plen >>> 8 & 0xff | plen << 8 & 0xff00;
+				dlen = dlen >>> 8 & 0xff | dlen << 8 & 0xff00;
 			} else {
 				// ??
 			}
 
-			if (l < 12 + plen + ((-plen) & 3) + dlen) {
+			if (l < 12 + plen + (-plen & 3) + dlen) {
 				return;
 			}
 
 			final byte[] bar = new byte[dlen];
-			System.arraycopy(foo, s + 12 + plen + ((-plen) & 3), bar, 0, dlen);
+			System.arraycopy(foo, s + 12 + plen + (-plen & 3), bar, 0, dlen);
 			byte[] faked_cookie = null;
 
 			synchronized (faked_cookie_pool) {
-				faked_cookie = (byte[]) faked_cookie_pool.get(_session);
+				faked_cookie = faked_cookie_pool.get(_session);
 			}
 
 			/*
@@ -258,7 +259,7 @@ class ChannelX11 extends Channel {
 
 			if (equals(bar, faked_cookie)) {
 				if (cookie != null) {
-					System.arraycopy(cookie, 0, foo, s + 12 + plen + ((-plen) & 3), dlen);
+					System.arraycopy(cookie, 0, foo, s + 12 + plen + (-plen & 3), dlen);
 				}
 			} else {
 				// System.err.println("wrong cookie");

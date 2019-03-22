@@ -40,29 +40,29 @@ public class SignatureRSA implements com.jcraft.jsch.SignatureRSA{
   KeyFactory keyFactory;
 
   public void init() throws Exception{
-    signature=java.security.Signature.getInstance("SHA1withRSA");
-    keyFactory=KeyFactory.getInstance("RSA");
+    this.signature=java.security.Signature.getInstance("SHA1withRSA");
+    this.keyFactory=KeyFactory.getInstance("RSA");
   }     
   public void setPubKey(byte[] e, byte[] n) throws Exception{
     RSAPublicKeySpec rsaPubKeySpec = 
 	new RSAPublicKeySpec(new BigInteger(n),
 			     new BigInteger(e));
-    PublicKey pubKey=keyFactory.generatePublic(rsaPubKeySpec);
-    signature.initVerify(pubKey);
+    PublicKey pubKey=this.keyFactory.generatePublic(rsaPubKeySpec);
+    this.signature.initVerify(pubKey);
   }
   public void setPrvKey(byte[] d, byte[] n) throws Exception{
     RSAPrivateKeySpec rsaPrivKeySpec = 
 	new RSAPrivateKeySpec(new BigInteger(n),
 			      new BigInteger(d));
-    PrivateKey prvKey = keyFactory.generatePrivate(rsaPrivKeySpec);
-    signature.initSign(prvKey);
+    PrivateKey prvKey = this.keyFactory.generatePrivate(rsaPrivKeySpec);
+    this.signature.initSign(prvKey);
   }
   public byte[] sign() throws Exception{
-    byte[] sig=signature.sign();      
+    byte[] sig=this.signature.sign();      
     return sig;
   }
   public void update(byte[] foo) throws Exception{
-   signature.update(foo);
+   this.signature.update(foo);
   }
   public boolean verify(byte[] sig) throws Exception{
     int i=0;
@@ -77,6 +77,6 @@ public class SignatureRSA implements com.jcraft.jsch.SignatureRSA{
       System.arraycopy(sig, i, tmp, 0, j); sig=tmp;
     }
 
-    return signature.verify(sig);
+    return this.signature.verify(sig);
   }
 }

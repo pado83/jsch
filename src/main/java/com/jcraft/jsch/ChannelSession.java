@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -38,7 +38,7 @@ class ChannelSession extends Channel {
 
 	protected boolean agent_forwarding = false;
 	protected boolean xforwading = false;
-	protected Hashtable env = null;
+	protected Hashtable<byte[], byte[]> env = null;
 
 	protected boolean pty = false;
 
@@ -81,7 +81,7 @@ class ChannelSession extends Channel {
 	 * @see #setEnv(byte[], byte[])
 	 */
 	@Deprecated
-	public void setEnv(final Hashtable env) {
+	public void setEnv(final Hashtable<byte[], byte[]> env) {
 		synchronized (this) {
 			this.env = env;
 		}
@@ -115,9 +115,9 @@ class ChannelSession extends Channel {
 		}
 	}
 
-	private Hashtable getEnv() {
+	private Hashtable<byte[], byte[]> getEnv() {
 		if (this.env == null) {
-			this.env = new Hashtable();
+			this.env = new Hashtable<byte[], byte[]>();
 		}
 		return this.env;
 	}
@@ -134,7 +134,7 @@ class ChannelSession extends Channel {
 
 	/**
 	 * Set the terminal mode.
-	 * 
+	 *
 	 * @param terminal_mode
 	 */
 	public void setTerminalMode(final byte[] terminal_mode) {
@@ -217,18 +217,18 @@ class ChannelSession extends Channel {
 		}
 
 		if (this.env != null) {
-			for (final Enumeration _env = this.env.keys(); _env.hasMoreElements();) {
-				final Object name = _env.nextElement();
+			for (final Enumeration<byte[]> _env = this.env.keys(); _env.hasMoreElements();) {
+				final byte[] name = _env.nextElement();
 				final Object value = this.env.get(name);
 				request = new RequestEnv();
-				((RequestEnv) request).setEnv(this.toByteArray(name),
-						this.toByteArray(value));
+				((RequestEnv) request).setEnv(ChannelSession.toByteArray(name),
+						ChannelSession.toByteArray(value));
 				request.request(_session, this);
 			}
 		}
 	}
 
-	private byte[] toByteArray(final Object o) {
+	private static byte[] toByteArray(final Object o) {
 		if (o instanceof String) {
 			return Util.str2byte((String) o);
 		}

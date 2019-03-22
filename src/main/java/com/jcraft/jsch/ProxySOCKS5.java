@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -29,8 +29,8 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
  This file depends on following documents,
-   - RFC 1928  SOCKS Protocol Verseion 5  
-   - RFC 1929  Username/Password Authentication for SOCKS V5. 
+   - RFC 1928  SOCKS Protocol Verseion 5
+   - RFC 1929  Username/Password Authentication for SOCKS V5.
  */
 
 package com.jcraft.jsch;
@@ -101,13 +101,13 @@ public class ProxySOCKS5 implements Proxy {
 			 * +----+----------+----------+
 			 * | 1 | 1 | 1 to 255 |
 			 * +----+----------+----------+
-			 * 
+			 *
 			 * The VER field is set to X'05' for this version of the protocol. The
 			 * NMETHODS field contains the number of method identifier octets that
 			 * appear in the METHODS field.
-			 * 
+			 *
 			 * The values currently defined for METHOD are:
-			 * 
+			 *
 			 * o X'00' NO AUTHENTICATION REQUIRED
 			 * o X'01' GSSAPI
 			 * o X'02' USERNAME/PASSWORD
@@ -127,7 +127,7 @@ public class ProxySOCKS5 implements Proxy {
 			/*
 			 * The server selects from one of the methods given in METHODS, and
 			 * sends a METHOD selection message:
-			 * 
+			 *
 			 * +----+--------+
 			 * |VER | METHOD |
 			 * +----+--------+
@@ -135,10 +135,10 @@ public class ProxySOCKS5 implements Proxy {
 			 * +----+--------+
 			 */
 			// in.read(buf, 0, 2);
-			this.fill(this.in, buf, 2);
+			ProxySOCKS5.fill(this.in, buf, 2);
 
 			boolean check = false;
-			switch ((buf[1]) & 0xff) {
+			switch (buf[1] & 0xff) {
 				case 0: // NO AUTHENTICATION REQUIRED
 					check = true;
 					break;
@@ -152,13 +152,13 @@ public class ProxySOCKS5 implements Proxy {
 					 * Username/Password Authentication protocol, the Username/Password
 					 * subnegotiation begins. This begins with the client producing a
 					 * Username/Password request:
-					 * 
+					 *
 					 * +----+------+----------+------+----------+
 					 * |VER | ULEN | UNAME | PLEN | PASSWD |
 					 * +----+------+----------+------+----------+
 					 * | 1 | 1 | 1 to 255 | 1 | 1 to 255 |
 					 * +----+------+----------+------+----------+
-					 * 
+					 *
 					 * The VER field contains the current version of the subnegotiation,
 					 * which is X'01'. The ULEN field contains the length of the UNAME field
 					 * that follows. The UNAME field contains the username as known to the
@@ -168,10 +168,10 @@ public class ProxySOCKS5 implements Proxy {
 					 */
 					index = 0;
 					buf[index++] = 1;
-					buf[index++] = (byte) (this.user.length());
+					buf[index++] = (byte) this.user.length();
 					System.arraycopy(Util.str2byte(this.user), 0, buf, index, this.user.length());
 					index += this.user.length();
-					buf[index++] = (byte) (this.passwd.length());
+					buf[index++] = (byte) this.passwd.length();
 					System.arraycopy(Util.str2byte(this.passwd), 0, buf, index, this.passwd.length());
 					index += this.passwd.length();
 
@@ -180,19 +180,19 @@ public class ProxySOCKS5 implements Proxy {
 					/*
 					 * The server verifies the supplied UNAME and PASSWD, and sends the
 					 * following response:
-					 * 
+					 *
 					 * +----+--------+
 					 * |VER | STATUS |
 					 * +----+--------+
 					 * | 1 | 1 |
 					 * +----+--------+
-					 * 
+					 *
 					 * A STATUS field of X'00' indicates success. If the server returns a
 					 * `failure' (STATUS value other than X'00') status, it MUST close the
 					 * connection.
 					 */
 					// in.read(buf, 0, 2);
-					this.fill(this.in, buf, 2);
+					ProxySOCKS5.fill(this.in, buf, 2);
 					if (buf[1] == 0) {
 						check = true;
 					}
@@ -209,15 +209,15 @@ public class ProxySOCKS5 implements Proxy {
 
 			/*
 			 * The SOCKS request is formed as follows:
-			 * 
+			 *
 			 * +----+-----+-------+------+----------+----------+
 			 * |VER | CMD | RSV | ATYP | DST.ADDR | DST.PORT |
 			 * +----+-----+-------+------+----------+----------+
 			 * | 1 | 1 | X'00' | 1 | Variable | 2 |
 			 * +----+-----+-------+------+----------+----------+
-			 * 
+			 *
 			 * Where:
-			 * 
+			 *
 			 * o VER protocol version: X'05'
 			 * o CMD
 			 * o CONNECT X'01'
@@ -241,7 +241,7 @@ public class ProxySOCKS5 implements Proxy {
 			final byte[] hostb = Util.str2byte(host);
 			final int len = hostb.length;
 			buf[index++] = 3; // DOMAINNAME
-			buf[index++] = (byte) (len);
+			buf[index++] = (byte) len;
 			System.arraycopy(hostb, 0, buf, index, len);
 			index += len;
 			buf[index++] = (byte) (port >>> 8);
@@ -254,15 +254,15 @@ public class ProxySOCKS5 implements Proxy {
 			 * established a connection to the SOCKS server, and completed the
 			 * authentication negotiations. The server evaluates the request, and
 			 * returns a reply formed as follows:
-			 * 
+			 *
 			 * +----+-----+-------+------+----------+----------+
 			 * |VER | REP | RSV | ATYP | BND.ADDR | BND.PORT |
 			 * +----+-----+-------+------+----------+----------+
 			 * | 1 | 1 | X'00' | 1 | Variable | 2 |
 			 * +----+-----+-------+------+----------+----------+
-			 * 
+			 *
 			 * Where:
-			 * 
+			 *
 			 * o VER protocol version: X'05'
 			 * o REP Reply field:
 			 * o X'00' succeeded
@@ -285,7 +285,7 @@ public class ProxySOCKS5 implements Proxy {
 			 */
 
 			// in.read(buf, 0, 4);
-			this.fill(this.in, buf, 4);
+			ProxySOCKS5.fill(this.in, buf, 4);
 
 			if (buf[1] != 0) {
 				try {
@@ -297,17 +297,17 @@ public class ProxySOCKS5 implements Proxy {
 			switch (buf[3] & 0xff) {
 				case 1:
 					// in.read(buf, 0, 6);
-					this.fill(this.in, buf, 6);
+					ProxySOCKS5.fill(this.in, buf, 6);
 					break;
 				case 3:
 					// in.read(buf, 0, 1);
-					this.fill(this.in, buf, 1);
+					ProxySOCKS5.fill(this.in, buf, 1);
 					// in.read(buf, 0, buf[0]+2);
-					this.fill(this.in, buf, (buf[0] & 0xff) + 2);
+					ProxySOCKS5.fill(this.in, buf, (buf[0] & 0xff) + 2);
 					break;
 				case 4:
 					// in.read(buf, 0, 18);
-					this.fill(this.in, buf, 18);
+					ProxySOCKS5.fill(this.in, buf, 18);
 					break;
 				default:
 			}
@@ -364,7 +364,7 @@ public class ProxySOCKS5 implements Proxy {
 		return DEFAULTPORT;
 	}
 
-	private void fill(final InputStream in, final byte[] buf, final int len) throws JSchException, IOException {
+	private static void fill(final InputStream in, final byte[] buf, final int len) throws JSchException, IOException {
 		int s = 0;
 		while (s < len) {
 			final int i = in.read(buf, s, len - s);

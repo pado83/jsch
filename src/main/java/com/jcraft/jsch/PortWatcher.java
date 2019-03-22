@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -38,7 +38,7 @@ import java.net.UnknownHostException;
 
 class PortWatcher implements Runnable {
 
-	private static java.util.Vector pool = new java.util.Vector();
+	private static java.util.Vector<PortWatcher> pool = new java.util.Vector<PortWatcher>();
 	private static InetAddress anyLocalAddress = null;
 	static {
 		// 0.0.0.0
@@ -62,10 +62,10 @@ class PortWatcher implements Runnable {
 	int connectTimeout = 0;
 
 	static String[] getPortForwarding(final Session session) {
-		final java.util.Vector foo = new java.util.Vector();
+		final java.util.Vector<String> foo = new java.util.Vector<String>();
 		synchronized (pool) {
 			for (int i = 0; i < pool.size(); i++) {
-				final PortWatcher p = (PortWatcher) (pool.elementAt(i));
+				final PortWatcher p = pool.elementAt(i);
 				if (p.session == session) {
 					foo.addElement(p.lport + ":" + p.host + ":" + p.rport);
 				}
@@ -73,7 +73,7 @@ class PortWatcher implements Runnable {
 		}
 		final String[] bar = new String[foo.size()];
 		for (int i = 0; i < foo.size(); i++) {
-			bar[i] = (String) (foo.elementAt(i));
+			bar[i] = foo.elementAt(i);
 		}
 		return bar;
 	}
@@ -87,10 +87,10 @@ class PortWatcher implements Runnable {
 		}
 		synchronized (pool) {
 			for (int i = 0; i < pool.size(); i++) {
-				final PortWatcher p = (PortWatcher) (pool.elementAt(i));
+				final PortWatcher p = pool.elementAt(i);
 				if (p.session == session && p.lport == lport) {
 					if (/* p.boundaddress.isAnyLocalAddress() || */
-					(anyLocalAddress != null && p.boundaddress.equals(anyLocalAddress)) ||
+					anyLocalAddress != null && p.boundaddress.equals(anyLocalAddress) ||
 							p.boundaddress.equals(addr)) {
 						return p;
 					}
@@ -136,7 +136,7 @@ class PortWatcher implements Runnable {
 			final PortWatcher[] foo = new PortWatcher[pool.size()];
 			int count = 0;
 			for (int i = 0; i < pool.size(); i++) {
-				final PortWatcher p = (PortWatcher) (pool.elementAt(i));
+				final PortWatcher p = pool.elementAt(i);
 				if (p.session == session) {
 					p.delete();
 					foo[count++] = p;
@@ -159,7 +159,7 @@ class PortWatcher implements Runnable {
 		this.rport = rport;
 		try {
 			this.boundaddress = InetAddress.getByName(address);
-			this.ss = (factory == null) ? new ServerSocket(lport, 0, this.boundaddress) : factory.createServerSocket(lport, 0, this.boundaddress);
+			this.ss = factory == null ? new ServerSocket(lport, 0, this.boundaddress) : factory.createServerSocket(lport, 0, this.boundaddress);
 		} catch (final Exception e) {
 			// System.err.println(e);
 			final String message = "PortForwardingL: local port " + address + ":" + lport + " cannot be bound.";

@@ -29,8 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch.jcraft;
 
-import com.jcraft.jsch.MAC;
-
 public class HMACSHA196 extends HMACSHA1{
 
   private static final String name="hmac-sha1-96";
@@ -40,8 +38,8 @@ public class HMACSHA196 extends HMACSHA1{
 
   private final byte[] _buf16=new byte[20];
   public void doFinal(byte[] buf, int offset){
-    super.doFinal(_buf16, 0);
-    System.arraycopy(_buf16, 0, buf, offset, BSIZE);
+    super.doFinal(this._buf16, 0);
+    System.arraycopy(this._buf16, 0, buf, offset, BSIZE);
   }
 
   public String getName(){

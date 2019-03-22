@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -39,19 +39,15 @@ import java.io.OutputStream;
 
 public class KnownHosts implements HostKeyRepository {
 
-	private static final String _known_hosts = "known_hosts";
-
-	private JSch jsch = null;
 	private String known_hosts = null;
-	private java.util.Vector pool = null;
+	private java.util.Vector<HostKey> pool = null;
 
 	private MAC hmacsha1 = null;
 
 	KnownHosts(final JSch jsch) {
 		super();
-		this.jsch = jsch;
 		this.hmacsha1 = this.getHMACSHA1();
-		this.pool = new java.util.Vector();
+		this.pool = new java.util.Vector<HostKey>();
 	}
 
 	void setKnownHosts(final String filename) throws JSchException {
@@ -84,9 +80,8 @@ public class KnownHosts implements HostKeyRepository {
 					if (j == -1) {
 						if (bufl == 0) {
 							break loop;
-						} else {
-							break;
 						}
+						break;
 					}
 					if (j == 0x0d) {
 						continue;
@@ -317,13 +312,12 @@ public class KnownHosts implements HostKeyRepository {
 
 		synchronized (this.pool) {
 			for (int i = 0; i < this.pool.size(); i++) {
-				final HostKey _hk = (HostKey) (this.pool.elementAt(i));
+				final HostKey _hk = this.pool.elementAt(i);
 				if (_hk.isMatched(host) && _hk.type == hk.type) {
 					if (Util.array_equals(_hk.key, key)) {
 						return OK;
-					} else {
-						result = CHANGED;
 					}
+					result = CHANGED;
 				}
 			}
 		}
@@ -341,12 +335,10 @@ public class KnownHosts implements HostKeyRepository {
 	public void add(final HostKey hostkey, final UserInfo userinfo) {
 		final int type = hostkey.type;
 		final String host = hostkey.getHost();
-		final byte[] key = hostkey.key;
-
 		HostKey hk = null;
 		synchronized (this.pool) {
 			for (int i = 0; i < this.pool.size(); i++) {
-				hk = (HostKey) (this.pool.elementAt(i));
+				hk = this.pool.elementAt(i);
 				if (hk.isMatched(host) && hk.type == type) {
 					/*
 					 * if(Util.array_equals(hk.key, key)){ return; }
@@ -412,21 +404,21 @@ public class KnownHosts implements HostKeyRepository {
 	@Override
 	public HostKey[] getHostKey(final String host, final String type) {
 		synchronized (this.pool) {
-			final java.util.ArrayList v = new java.util.ArrayList();
+			final java.util.ArrayList<HostKey> v = new java.util.ArrayList<HostKey>();
 			for (int i = 0; i < this.pool.size(); i++) {
-				final HostKey hk = (HostKey) this.pool.elementAt(i);
+				final HostKey hk = this.pool.elementAt(i);
 				if (hk.type == HostKey.UNKNOWN) {
 					continue;
 				}
 				if (host == null ||
-						(hk.isMatched(host) &&
-								(type == null || hk.getType().equals(type)))) {
+						hk.isMatched(host) &&
+								(type == null || hk.getType().equals(type))) {
 					v.add(hk);
 				}
 			}
 			HostKey[] foo = new HostKey[v.size()];
 			for (int i = 0; i < v.size(); i++) {
-				foo[i] = (HostKey) v.get(i);
+				foo[i] = v.get(i);
 			}
 			if (host != null && host.startsWith("[") && host.indexOf("]:") > 1) {
 				final HostKey[] tmp = this.getHostKey(host.substring(1, host.indexOf("]:")), type);
@@ -451,18 +443,18 @@ public class KnownHosts implements HostKeyRepository {
 		boolean sync = false;
 		synchronized (this.pool) {
 			for (int i = 0; i < this.pool.size(); i++) {
-				final HostKey hk = (HostKey) (this.pool.elementAt(i));
+				final HostKey hk = this.pool.elementAt(i);
 				if (host == null ||
-						(hk.isMatched(host) &&
-								(type == null || (hk.getType().equals(type) &&
-										(key == null || Util.array_equals(key, hk.key)))))) {
+						hk.isMatched(host) &&
+								(type == null || hk.getType().equals(type) &&
+										(key == null || Util.array_equals(key, hk.key)))) {
 					final String hosts = hk.getHost();
 					if (hosts.equals(host) ||
-							((hk instanceof HashedHostKey) &&
-									((HashedHostKey) hk).isHashed())) {
+							hk instanceof HashedHostKey &&
+									((HashedHostKey) hk).isHashed()) {
 						this.pool.removeElement(hk);
 					} else {
-						hk.host = this.deleteSubString(hosts, host);
+						hk.host = KnownHosts.deleteSubString(hosts, host);
 					}
 					sync = true;
 				}
@@ -471,7 +463,7 @@ public class KnownHosts implements HostKeyRepository {
 		if (sync) {
 			try {
 				this.sync();
-			} catch (final Exception e) {} ;
+			} catch (final Exception e) {}
 		}
 	}
 
@@ -498,7 +490,7 @@ public class KnownHosts implements HostKeyRepository {
 			HostKey hk;
 			synchronized (this.pool) {
 				for (int i = 0; i < this.pool.size(); i++) {
-					hk = (HostKey) (this.pool.elementAt(i));
+					hk = this.pool.elementAt(i);
 					// hk.dump(out);
 					final String marker = hk.getMarker();
 					final String host = hk.getHost();
@@ -530,7 +522,7 @@ public class KnownHosts implements HostKeyRepository {
 		}
 	}
 
-	private String deleteSubString(final String hosts, final String host) {
+	private static String deleteSubString(final String hosts, final String host) {
 		int i = 0;
 		final int hostlen = host.length();
 		final int hostslen = hosts.length();
@@ -547,7 +539,7 @@ public class KnownHosts implements HostKeyRepository {
 			return hosts.substring(0, i) + hosts.substring(j + 1);
 		}
 		if (hosts.endsWith(host) && hostslen - i == hostlen) {
-			return hosts.substring(0, (hostlen == hostslen) ? 0 : hostslen - hostlen - 1);
+			return hosts.substring(0, hostlen == hostslen ? 0 : hostslen - hostlen - 1);
 		}
 		return hosts;
 	}
@@ -555,8 +547,8 @@ public class KnownHosts implements HostKeyRepository {
 	private MAC getHMACSHA1() {
 		if (this.hmacsha1 == null) {
 			try {
-				final Class c = Class.forName(JSch.getConfig("hmac-sha1"));
-				this.hmacsha1 = (MAC) (c.newInstance());
+				final Class<?> c = Class.forName(JSch.getConfig("hmac-sha1"));
+				this.hmacsha1 = (MAC) c.newInstance();
 			} catch (final Exception e) {
 				System.err.println("hmacsha1: " + e);
 			}

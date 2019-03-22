@@ -79,7 +79,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
       }
       GSSName _host=mgr.createName("host/"+cname, principalName);
 
-      context=mgr.createContext(_host,
+      this.context=mgr.createContext(_host,
                                 krb5,
                                 crd,
                                 GSSContext.DEFAULT_LIFETIME);
@@ -98,11 +98,11 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
 
       // TODO: OpenSSH's sshd does accepts 'false' for mutual_req_flag
       //context.requestMutualAuth(false);
-      context.requestMutualAuth(true);
-      context.requestConf(true);
-      context.requestInteg(true);             // for MIC
-      context.requestCredDeleg(true);
-      context.requestAnonymity(false);
+      this.context.requestMutualAuth(true);
+      this.context.requestConf(true);
+      this.context.requestInteg(true);             // for MIC
+      this.context.requestCredDeleg(true);
+      this.context.requestAnonymity(false);
 
       return;
     }
@@ -112,7 +112,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
   }
 
   public boolean isEstablished(){
-    return context.isEstablished();
+    return this.context.isEstablished();
   }
 
   public byte[] init(byte[] token, int s, int l) throws JSchException {
@@ -126,7 +126,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
       if(useSubjectCredsOnly==null){
         setSystemProperty(pUseSubjectCredsOnly, "false");
       }
-      return context.initSecContext(token, 0, l);
+      return this.context.initSecContext(token, 0, l);
     }
     catch(GSSException ex){
       throw new JSchException(ex.toString());
@@ -145,7 +145,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
   public byte[] getMIC(byte[] message, int s, int l){
     try{
       MessageProp prop =  new MessageProp(0, true);
-      return context.getMIC(message, s, l, prop);
+      return this.context.getMIC(message, s, l, prop);
     }
     catch(GSSException ex){
       return null;
@@ -154,7 +154,7 @@ public class GSSContextKrb5 implements com.jcraft.jsch.GSSContext{
 
   public void dispose(){
     try{
-      context.dispose();
+      this.context.dispose();
     }
     catch(GSSException ex){
     }

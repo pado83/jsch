@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -111,7 +111,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Writes the plain private key to the given output stream.
-	 * 
+	 *
 	 * @param out output stream
 	 * @see #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
 	 */
@@ -121,7 +121,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Writes the cyphered private key to the given output stream.
-	 * 
+	 *
 	 * @param out output stream
 	 * @param passphrase a passphrase to encrypt the private key
 	 */
@@ -146,9 +146,9 @@ public abstract class KeyPair {
 				out.write(header[0]);
 				out.write(cr);
 				out.write(header[1]);
-				for (int i = 0; i < iv.length; i++) {
-					out.write(b2a((byte) ((iv[i] >>> 4) & 0x0f)));
-					out.write(b2a((byte) (iv[i] & 0x0f)));
+				for (final byte element : iv) {
+					out.write(b2a((byte) (element >>> 4 & 0x0f)));
+					out.write(b2a((byte) (element & 0x0f)));
 				}
 				out.write(cr);
 				out.write(cr);
@@ -179,7 +179,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Returns the blob of the public key.
-	 * 
+	 *
 	 * @return blob of the public key
 	 */
 	public byte[] getPublicKeyBlob() {
@@ -191,7 +191,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Writes the public key with the specified comment to the output stream.
-	 * 
+	 *
 	 * @param out output stream
 	 * @param comment comment
 	 */
@@ -210,7 +210,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Writes the public key with the specified comment to the file.
-	 * 
+	 *
 	 * @param name file name
 	 * @param comment comment
 	 * @see #writePublicKey(java.io.OutputStream out, String comment)
@@ -224,7 +224,7 @@ public abstract class KeyPair {
 	/**
 	 * Writes the public key with the specified comment to the output stream in
 	 * the format defined in http://www.ietf.org/rfc/rfc4716.txt
-	 * 
+	 *
 	 * @param out output stream
 	 * @param comment comment
 	 */
@@ -239,7 +239,7 @@ public abstract class KeyPair {
 			int index = 0;
 			while (index < pub.length) {
 				int len = 70;
-				if ((pub.length - index) < len) {
+				if (pub.length - index < len) {
 					len = pub.length - index;
 				}
 				out.write(pub, index, len);
@@ -254,7 +254,7 @@ public abstract class KeyPair {
 	/**
 	 * Writes the public key with the specified comment to the output stream in
 	 * the format defined in http://www.ietf.org/rfc/rfc4716.txt
-	 * 
+	 *
 	 * @param name file name
 	 * @param comment comment
 	 * @see #writeSECSHPublicKey(java.io.OutputStream out, String comment)
@@ -267,7 +267,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Writes the plain private key to the file.
-	 * 
+	 *
 	 * @param name file name
 	 * @see #writePrivateKey(String name, byte[] passphrase)
 	 */
@@ -277,7 +277,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Writes the cyphered private key to the file.
-	 * 
+	 *
 	 * @param name file name
 	 * @param passphrase a passphrase to encrypt the private key
 	 * @see #writePrivateKey(java.io.OutputStream out, byte[] passphrase)
@@ -290,7 +290,7 @@ public abstract class KeyPair {
 
 	/**
 	 * Returns the finger-print of the public key.
-	 * 
+	 *
 	 * @return finger print
 	 */
 	public String getFingerPrint() {
@@ -329,7 +329,7 @@ public abstract class KeyPair {
 			final byte[] foo = new byte[(encoded.length / bsize + 1) * bsize];
 			System.arraycopy(encoded, 0, foo, 0, encoded.length);
 			final int padding = bsize - encoded.length % bsize;
-			for (int i = foo.length - 1; (foo.length - padding) <= i; i--) {
+			for (int i = foo.length - 1; foo.length - padding <= i; i--) {
 				foo[i] = (byte) padding;
 			}
 			encoded = foo;
@@ -423,8 +423,8 @@ public abstract class KeyPair {
 	private Random genRandom() {
 		if (this.random == null) {
 			try {
-				final Class c = Class.forName(JSch.getConfig("random"));
-				this.random = (Random) (c.newInstance());
+				final Class<?> c = Class.forName(JSch.getConfig("random"));
+				this.random = (Random) c.newInstance();
 			} catch (final Exception e) {
 				System.err.println("connect: random " + e);
 			}
@@ -434,8 +434,8 @@ public abstract class KeyPair {
 
 	private HASH genHash() {
 		try {
-			final Class c = Class.forName(JSch.getConfig("md5"));
-			this.hash = (HASH) (c.newInstance());
+			final Class<?> c = Class.forName(JSch.getConfig("md5"));
+			this.hash = (HASH) c.newInstance();
 			this.hash.init();
 		} catch (final Exception e) {}
 		return this.hash;
@@ -443,9 +443,9 @@ public abstract class KeyPair {
 
 	private Cipher genCipher() {
 		try {
-			Class c;
+			Class<?> c;
 			c = Class.forName(JSch.getConfig("3des-cbc"));
-			this.cipher = (Cipher) (c.newInstance());
+			this.cipher = (Cipher) c.newInstance();
 		} catch (final Exception e) {}
 		return this.cipher;
 	}
@@ -494,8 +494,8 @@ public abstract class KeyPair {
 				}
 				System.arraycopy(hn, 0, key, 0, key.length);
 			} else if (this.vendor == VENDOR_PUTTY) {
-				final Class c = Class.forName(JSch.getConfig("sha-1"));
-				final HASH sha1 = (HASH) (c.newInstance());
+				final Class<?> c = Class.forName(JSch.getConfig("sha-1"));
+				final HASH sha1 = (HASH) c.newInstance();
 				tmp = new byte[4];
 				key = new byte[20 * 2];
 				for (int i = 0; i < 2; i++) {
@@ -625,9 +625,9 @@ public abstract class KeyPair {
 		// prvkey from "ssh-add" command on the remote.
 		if (pubkey == null &&
 				prvkey != null &&
-				(prvkey.length > 11 &&
-						prvkey[0] == 0 && prvkey[1] == 0 && prvkey[2] == 0 &&
-						(prvkey[3] == 7 || prvkey[3] == 19))) {
+				prvkey.length > 11 &&
+				prvkey[0] == 0 && prvkey[1] == 0 && prvkey[2] == 0 &&
+				(prvkey[3] == 7 || prvkey[3] == 19)) {
 
 			final Buffer buf = new Buffer(prvkey);
 			buf.skip(prvkey.length); // for using Buffer#available()
@@ -659,7 +659,7 @@ public abstract class KeyPair {
 				}
 			}
 
-			int len = (buf != null ? buf.length : 0);
+			int len = buf != null ? buf.length : 0;
 			int i = 0;
 
 			// skip garbage lines.
@@ -713,8 +713,8 @@ public abstract class KeyPair {
 						buf[i + 4] == '2' && buf[i + 5] == '5' && buf[i + 6] == '6' && buf[i + 7] == '-') {
 					i += 8;
 					if (Session.checkCipher(JSch.getConfig("aes256-cbc"))) {
-						final Class c = Class.forName(JSch.getConfig("aes256-cbc"));
-						cipher = (Cipher) (c.newInstance());
+						final Class<?> c = Class.forName(JSch.getConfig("aes256-cbc"));
+						cipher = (Cipher) c.newInstance();
 						// key=new byte[cipher.getBlockSize()];
 						iv = new byte[cipher.getIVSize()];
 					} else {
@@ -726,8 +726,8 @@ public abstract class KeyPair {
 						buf[i + 4] == '1' && buf[i + 5] == '9' && buf[i + 6] == '2' && buf[i + 7] == '-') {
 					i += 8;
 					if (Session.checkCipher(JSch.getConfig("aes192-cbc"))) {
-						final Class c = Class.forName(JSch.getConfig("aes192-cbc"));
-						cipher = (Cipher) (c.newInstance());
+						final Class<?> c = Class.forName(JSch.getConfig("aes192-cbc"));
+						cipher = (Cipher) c.newInstance();
 						// key=new byte[cipher.getBlockSize()];
 						iv = new byte[cipher.getIVSize()];
 					} else {
@@ -739,8 +739,8 @@ public abstract class KeyPair {
 						buf[i + 4] == '1' && buf[i + 5] == '2' && buf[i + 6] == '8' && buf[i + 7] == '-') {
 					i += 8;
 					if (Session.checkCipher(JSch.getConfig("aes128-cbc"))) {
-						final Class c = Class.forName(JSch.getConfig("aes128-cbc"));
-						cipher = (Cipher) (c.newInstance());
+						final Class<?> c = Class.forName(JSch.getConfig("aes128-cbc"));
+						cipher = (Cipher) c.newInstance();
 						// key=new byte[cipher.getBlockSize()];
 						iv = new byte[cipher.getIVSize()];
 					} else {
@@ -751,7 +751,7 @@ public abstract class KeyPair {
 				if (buf[i] == 'C' && i + 3 < len && buf[i + 1] == 'B' && buf[i + 2] == 'C' && buf[i + 3] == ',') {
 					i += 4;
 					for (int ii = 0; ii < iv.length; ii++) {
-						iv[ii] = (byte) (((a2b(buf[i++]) << 4) & 0xf0) + (a2b(buf[i++]) & 0xf));
+						iv[ii] = (byte) ((a2b(buf[i++]) << 4 & 0xf0) + (a2b(buf[i++]) & 0xf));
 					}
 					continue;
 				}
@@ -805,7 +805,7 @@ public abstract class KeyPair {
 					i++;
 				}
 
-				if ((len - i) == 0 || (i - start) == 0) {
+				if (len - i == 0 || i - start == 0) {
 					throw new JSchException("invalid privatekey: " + prvkey);
 				}
 
@@ -820,7 +820,7 @@ public abstract class KeyPair {
 				int _len = _buf.length;
 				while (i < _len) {
 					if (_buf[i] == 0x0a) {
-						final boolean xd = (_buf[i - 1] == 0x0d);
+						final boolean xd = _buf[i - 1] == 0x0d;
 						// ignore 0x0a (or 0x0d0x0a)
 						System.arraycopy(_buf, i + 1, _buf, i - (xd ? 1 : 0), _len - (i + 1));
 						if (xd) {
@@ -852,7 +852,7 @@ public abstract class KeyPair {
 				final Buffer _buf = new Buffer(data);
 				_buf.getInt(); // 0x3f6ff9be
 				_buf.getInt();
-				final byte[] _type = _buf.getString();
+				_buf.getString();
 				// System.err.println("type: "+new String(_type));
 				final String _cipher = Util.byte2str(_buf.getString());
 				// System.err.println("cipher: "+_cipher);
@@ -1056,9 +1056,8 @@ public abstract class KeyPair {
 				if (kpair.parse(data)) {
 					kpair.encrypted = false;
 					return kpair;
-				} else {
-					throw new JSchException("invalid privatekey: " + prvkey);
 				}
+				throw new JSchException("invalid privatekey: " + prvkey);
 			}
 		}
 
@@ -1088,28 +1087,13 @@ public abstract class KeyPair {
 		this.dispose();
 	}
 
-	private static final String[] header1 = {
-			"PuTTY-User-Key-File-2: ",
-			"Encryption: ",
-			"Comment: ",
-			"Public-Lines: "
-	};
-
-	private static final String[] header2 = {
-			"Private-Lines: "
-	};
-
-	private static final String[] header3 = {
-			"Private-MAC: "
-	};
-
 	static KeyPair loadPPK(final JSch jsch, final byte[] buf) throws JSchException {
 		byte[] pubkey = null;
 		byte[] prvkey = null;
 		int lines = 0;
 
 		final Buffer buffer = new Buffer(buf);
-		final java.util.Hashtable v = new java.util.Hashtable();
+		final java.util.Hashtable<String, String> v = new java.util.Hashtable<String, String>();
 
 		while (true) {
 			if (!parseHeader(buffer, v)) {
@@ -1117,12 +1101,12 @@ public abstract class KeyPair {
 			}
 		}
 
-		final String typ = (String) v.get("PuTTY-User-Key-File-2");
+		final String typ = v.get("PuTTY-User-Key-File-2");
 		if (typ == null) {
 			return null;
 		}
 
-		lines = Integer.parseInt((String) v.get("Public-Lines"));
+		lines = Integer.parseInt(v.get("Public-Lines"));
 		pubkey = parseLines(buffer, lines);
 
 		while (true) {
@@ -1131,7 +1115,7 @@ public abstract class KeyPair {
 			}
 		}
 
-		lines = Integer.parseInt((String) v.get("Private-Lines"));
+		lines = Integer.parseInt(v.get("Private-Lines"));
 		prvkey = parseLines(buffer, lines);
 
 		while (true) {
@@ -1179,18 +1163,14 @@ public abstract class KeyPair {
 			return null;
 		}
 
-		if (kpair == null) {
-			return null;
-		}
-
 		kpair.encrypted = !v.get("Encryption").equals("none");
 		kpair.vendor = VENDOR_PUTTY;
-		kpair.publicKeyComment = (String) v.get("Comment");
+		kpair.publicKeyComment = v.get("Comment");
 		if (kpair.encrypted) {
 			if (Session.checkCipher(JSch.getConfig("aes256-cbc"))) {
 				try {
-					final Class c = Class.forName(JSch.getConfig("aes256-cbc"));
-					kpair.cipher = (Cipher) (c.newInstance());
+					final Class<?> c = Class.forName(JSch.getConfig("aes256-cbc"));
+					kpair.cipher = (Cipher) c.newInstance();
 					kpair.iv = new byte[kpair.cipher.getIVSize()];
 				} catch (final Exception e) {
 					throw new JSchException("The cipher 'aes256-cbc' is required, but it is not available.");
@@ -1243,7 +1223,7 @@ public abstract class KeyPair {
 		return data;
 	}
 
-	private static boolean parseHeader(final Buffer buffer, final java.util.Hashtable v) {
+	private static boolean parseHeader(final Buffer buffer, final java.util.Hashtable<String, String> v) {
 		final byte[] buf = buffer.buffer;
 		int index = buffer.index;
 		String key = null;
@@ -1284,7 +1264,7 @@ public abstract class KeyPair {
 			buffer.index = index;
 		}
 
-		return (key != null && value != null);
+		return value != null;
 	}
 
 	void copy(final KeyPair kpair) {
@@ -1297,7 +1277,7 @@ public abstract class KeyPair {
 	class ASN1Exception extends Exception {
 
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 2024082651727202925L;
 	}
@@ -1374,7 +1354,7 @@ public abstract class KeyPair {
 				return new ASN1[0];
 			}
 			int index = indexp[0];
-			final java.util.Vector values = new java.util.Vector();
+			final java.util.Vector<ASN1> values = new java.util.Vector<ASN1>();
 			while (length > 0) {
 				index++;
 				length--;
@@ -1382,14 +1362,14 @@ public abstract class KeyPair {
 				indexp[0] = index;
 				final int l = this.getLength(indexp);
 				index = indexp[0];
-				length -= (index - tmp);
-				values.addElement(new ASN1(this.buf, tmp - 1, 1 + (index - tmp) + l));
+				length -= index - tmp;
+				values.addElement(new ASN1(this.buf, tmp - 1, 1 + index - tmp + l));
 				index += l;
 				length -= l;
 			}
 			final ASN1[] result = new ASN1[values.size()];
 			for (int i = 0; i < values.size(); i++) {
-				result[i] = (ASN1) values.elementAt(i);
+				result[i] = values.elementAt(i);
 			}
 			return result;
 		}

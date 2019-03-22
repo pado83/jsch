@@ -30,7 +30,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
 import javax.crypto.spec.*;
 
 public class ARCFOUR256 implements Cipher{
@@ -48,26 +47,26 @@ public class ARCFOUR256 implements Cipher{
       key=tmp;
     }
     try{
-      cipher=javax.crypto.Cipher.getInstance("RC4");
+      this.cipher=javax.crypto.Cipher.getInstance("RC4");
       SecretKeySpec _key = new SecretKeySpec(key, "RC4");
       synchronized(javax.crypto.Cipher.class){
-        cipher.init((mode==ENCRYPT_MODE?
+        this.cipher.init((mode==ENCRYPT_MODE?
                      javax.crypto.Cipher.ENCRYPT_MODE:
                      javax.crypto.Cipher.DECRYPT_MODE),
                     _key);
       }
       byte[] foo=new byte[1];
       for(int i=0; i<skip; i++){
-        cipher.update(foo, 0, 1, foo, 0);
+        this.cipher.update(foo, 0, 1, foo, 0);
       }
     }
     catch(Exception e){
-      cipher=null;
+      this.cipher=null;
       throw e;
     }
   }
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    cipher.update(foo, s1, len, bar, s2);
+    this.cipher.update(foo, s1, len, bar, s2);
   }
   public boolean isCBC(){return false; }
 }

@@ -30,7 +30,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import com.jcraft.jsch.Cipher;
-import javax.crypto.*;
 import javax.crypto.spec.*;
 
 public class ARCFOUR implements Cipher{
@@ -40,7 +39,6 @@ public class ARCFOUR implements Cipher{
   public int getIVSize(){return ivsize;} 
   public int getBlockSize(){return bsize;}
   public void init(int mode, byte[] key, byte[] iv) throws Exception{
-    String pad="NoPadding";      
     byte[] tmp;
     if(key.length>bsize){
       tmp=new byte[bsize];
@@ -49,22 +47,22 @@ public class ARCFOUR implements Cipher{
     }
 
     try{
-      cipher=javax.crypto.Cipher.getInstance("RC4");
+      this.cipher=javax.crypto.Cipher.getInstance("RC4");
       SecretKeySpec _key = new SecretKeySpec(key, "RC4");
       synchronized(javax.crypto.Cipher.class){
-        cipher.init((mode==ENCRYPT_MODE?
+        this.cipher.init((mode==ENCRYPT_MODE?
                      javax.crypto.Cipher.ENCRYPT_MODE:
                      javax.crypto.Cipher.DECRYPT_MODE),
 		    _key);
       }
     }
     catch(Exception e){
-      cipher=null;
+      this.cipher=null;
       throw e;
     }
   }
   public void update(byte[] foo, int s1, int len, byte[] bar, int s2) throws Exception{
-    cipher.update(foo, s1, len, bar, s2);
+    this.cipher.update(foo, s1, len, bar, s2);
   }
   public boolean isCBC(){return false; }
 }

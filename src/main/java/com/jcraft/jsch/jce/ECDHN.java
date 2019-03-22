@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -30,117 +30,135 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.jcraft.jsch.jce;
 
 import java.math.BigInteger;
-import java.security.*;
-import javax.crypto.*;
-import java.security.spec.*;
-import java.security.interfaces.*;
- 
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECFieldFp;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
+import java.security.spec.EllipticCurve;
+
+import javax.crypto.KeyAgreement;
+
 public class ECDHN implements com.jcraft.jsch.ECDH {
-  byte[] Q_array;
-  ECPublicKey publicKey;
 
-  private KeyAgreement myKeyAgree;
-  public void init(int size) throws Exception{
-    myKeyAgree = KeyAgreement.getInstance("ECDH");
-    KeyPairGenECDSA kpair = new KeyPairGenECDSA();
-    kpair.init(size);
-    publicKey = kpair.getPublicKey();
-    byte[] r = kpair.getR();
-    byte[] s = kpair.getS();
-    Q_array = toPoint(r, s);
-    myKeyAgree.init(kpair.getPrivateKey());
-  }
+	byte[] Q_array;
+	ECPublicKey publicKey;
 
-  public byte[] getQ() throws Exception{
-    return Q_array;
-  }
+	private KeyAgreement myKeyAgree;
 
-  public byte[] getSecret(byte[] r, byte[] s) throws Exception{
+	@Override
+	public void init(final int size) throws Exception {
+		this.myKeyAgree = KeyAgreement.getInstance("ECDH");
+		final KeyPairGenECDSA kpair = new KeyPairGenECDSA();
+		kpair.init(size);
+		this.publicKey = kpair.getPublicKey();
+		final byte[] r = kpair.getR();
+		final byte[] s = kpair.getS();
+		this.Q_array = toPoint(r, s);
+		this.myKeyAgree.init(kpair.getPrivateKey());
+	}
 
-    KeyFactory kf = KeyFactory.getInstance("EC");
-    ECPoint w = new ECPoint(new BigInteger(1, r), new BigInteger(1, s));
-    ECPublicKeySpec spec = new ECPublicKeySpec(w, publicKey.getParams());
-    PublicKey theirPublicKey = kf.generatePublic(spec);
-    myKeyAgree.doPhase(theirPublicKey, true);
-    return myKeyAgree.generateSecret();
-  }
+	@Override
+	public byte[] getQ() throws Exception {
+		return this.Q_array;
+	}
 
-  private static BigInteger two = BigInteger.ONE.add(BigInteger.ONE);
-  private static BigInteger three = two.add(BigInteger.ONE);
+	@Override
+	public byte[] getSecret(final byte[] r, final byte[] s) throws Exception {
 
-  // SEC 1: Elliptic Curve Cryptography, Version 2.0
-  // http://www.secg.org/sec1-v2.pdf
-  // 3.2.2.1 Elliptic Curve Public Key Validation Primitive
-  public boolean validate(byte[] r, byte[] s) throws Exception{
-    BigInteger x = new BigInteger(1, r);
-    BigInteger y = new BigInteger(1, s);
+		final KeyFactory kf = KeyFactory.getInstance("EC");
+		final ECPoint w = new ECPoint(new BigInteger(1, r), new BigInteger(1, s));
+		final ECPublicKeySpec spec = new ECPublicKeySpec(w, this.publicKey.getParams());
+		final PublicKey theirPublicKey = kf.generatePublic(spec);
+		this.myKeyAgree.doPhase(theirPublicKey, true);
+		return this.myKeyAgree.generateSecret();
+	}
 
-    // Step.1
-    //   Check that Q != O
-    ECPoint w = new ECPoint(x, y);
-    if(w.equals(ECPoint.POINT_INFINITY)){
-      return false;
-    }
+	private static BigInteger two = BigInteger.ONE.add(BigInteger.ONE);
+	private static BigInteger three = two.add(BigInteger.ONE);
 
-    // Step.2
-    // If T represents elliptic curve domain parameters over Fp,
-    // check that xQ and yQ are integers in the interval [0, p-1],
-    // and that:
-    //   y^2 = x^3 + x*a + b (mod p)
+	// SEC 1: Elliptic Curve Cryptography, Version 2.0
+	// http://www.secg.org/sec1-v2.pdf
+	// 3.2.2.1 Elliptic Curve Public Key Validation Primitive
+	@Override
+	public boolean validate(final byte[] r, final byte[] s) throws Exception {
+		final BigInteger x = new BigInteger(1, r);
+		final BigInteger y = new BigInteger(1, s);
 
-    ECParameterSpec params = publicKey.getParams();
-    EllipticCurve curve = params.getCurve();
-    BigInteger p=((ECFieldFp)curve.getField()).getP(); //nistp should be Fp. 
+		// Step.1
+		// Check that Q != O
+		final ECPoint w = new ECPoint(x, y);
+		if (w.equals(ECPoint.POINT_INFINITY)) {
+			return false;
+		}
 
-    // xQ and yQ should be integers in the interval [0, p-1]
-    BigInteger p_sub1=p.subtract(BigInteger.ONE);
-    if(!(x.compareTo(p_sub1)<=0 && y.compareTo(p_sub1)<=0)){
-      return false;
-    }
+		// Step.2
+		// If T represents elliptic curve domain parameters over Fp,
+		// check that xQ and yQ are integers in the interval [0, p-1],
+		// and that:
+		// y^2 = x^3 + x*a + b (mod p)
 
-    // y^2 = x^3 + x*a + b (mod p)
-    BigInteger tmp=x.multiply(curve.getA()).
-                     add(curve.getB()).
-                     add(x.modPow(three, p)).
-                     mod(p);
-    BigInteger y_2=y.modPow(two, p);
-    if(!(y_2.equals(tmp))){ 
-      return false;
-    }
+		final ECParameterSpec params = this.publicKey.getParams();
+		final EllipticCurve curve = params.getCurve();
+		final BigInteger p = ((ECFieldFp) curve.getField()).getP(); // nistp should be Fp.
 
-    // Step.3
-    //   Check that nQ = O.
-    // Unfortunately, JCE does not provide the point multiplication method.
-    /*
-    if(!w.multiply(params.getOrder()).equals(ECPoint.POINT_INFINITY)){
-      return false;
-    }
-    */
-    return true;
-  }
+		// xQ and yQ should be integers in the interval [0, p-1]
+		final BigInteger p_sub1 = p.subtract(BigInteger.ONE);
+		if (!(x.compareTo(p_sub1) <= 0 && y.compareTo(p_sub1) <= 0)) {
+			return false;
+		}
 
-  private byte[] toPoint(byte[] r_array, byte[] s_array) {
-    byte[] tmp = new byte[1+r_array.length+s_array.length];
-    tmp[0]=0x04;
-    System.arraycopy(r_array, 0, tmp, 1, r_array.length);
-    System.arraycopy(s_array, 0, tmp, 1+r_array.length, s_array.length);
-    return tmp;
-  }
-  private byte[] insert0(byte[] buf){
-    if ((buf[0] & 0x80) == 0) return buf;
-    byte[] tmp = new byte[buf.length+1];
-    System.arraycopy(buf, 0, tmp, 1, buf.length);
-    bzero(buf);
-    return tmp;
-  }
-  private byte[] chop0(byte[] buf){
-    if(buf[0]!=0) return buf;
-    byte[] tmp = new byte[buf.length-1];
-    System.arraycopy(buf, 1, tmp, 0, tmp.length);
-    bzero(buf);
-    return tmp;
-  }
-  private void bzero(byte[] buf){
-    for(int i = 0; i<buf.length; i++) buf[i]=0;
-  }
+		// y^2 = x^3 + x*a + b (mod p)
+		final BigInteger tmp = x.multiply(curve.getA()).add(curve.getB()).add(x.modPow(three, p)).mod(p);
+		final BigInteger y_2 = y.modPow(two, p);
+		if (!y_2.equals(tmp)) {
+			return false;
+		}
+
+		// Step.3
+		// Check that nQ = O.
+		// Unfortunately, JCE does not provide the point multiplication method.
+		/*
+		 * if(!w.multiply(params.getOrder()).equals(ECPoint.POINT_INFINITY)){
+		 * return false;
+		 * }
+		 */
+		return true;
+	}
+
+	private static byte[] toPoint(final byte[] r_array, final byte[] s_array) {
+		final byte[] tmp = new byte[1 + r_array.length + s_array.length];
+		tmp[0] = 0x04;
+		System.arraycopy(r_array, 0, tmp, 1, r_array.length);
+		System.arraycopy(s_array, 0, tmp, 1 + r_array.length, s_array.length);
+		return tmp;
+	}
+
+	private static byte[] insert0(final byte[] buf) {
+		if ((buf[0] & 0x80) == 0) {
+			return buf;
+		}
+		final byte[] tmp = new byte[buf.length + 1];
+		System.arraycopy(buf, 0, tmp, 1, buf.length);
+		ECDHN.bzero(buf);
+		return tmp;
+	}
+
+	private static byte[] chop0(final byte[] buf) {
+		if (buf[0] != 0) {
+			return buf;
+		}
+		final byte[] tmp = new byte[buf.length - 1];
+		System.arraycopy(buf, 1, tmp, 0, tmp.length);
+		ECDHN.bzero(buf);
+		return tmp;
+	}
+
+	private static void bzero(final byte[] buf) {
+		for (int i = 0; i < buf.length; i++) {
+			buf[i] = 0;
+		}
+	}
 }

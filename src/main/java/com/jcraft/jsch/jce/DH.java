@@ -47,32 +47,32 @@ public class DH implements com.jcraft.jsch.DH{
   private KeyPairGenerator myKpairGen;
   private KeyAgreement myKeyAgree;
   public void init() throws Exception{
-    myKpairGen=KeyPairGenerator.getInstance("DH");
-    myKeyAgree=KeyAgreement.getInstance("DH");
+    this.myKpairGen=KeyPairGenerator.getInstance("DH");
+    this.myKeyAgree=KeyAgreement.getInstance("DH");
   }
   public byte[] getE() throws Exception{
-    if(e==null){
-      DHParameterSpec dhSkipParamSpec=new DHParameterSpec(p, g);
-      myKpairGen.initialize(dhSkipParamSpec);
-      KeyPair myKpair=myKpairGen.generateKeyPair();
-      myKeyAgree.init(myKpair.getPrivate());
-      e=((javax.crypto.interfaces.DHPublicKey)(myKpair.getPublic())).getY();
-      e_array=e.toByteArray();
+    if(this.e==null){
+      DHParameterSpec dhSkipParamSpec=new DHParameterSpec(this.p, this.g);
+      this.myKpairGen.initialize(dhSkipParamSpec);
+      KeyPair myKpair=this.myKpairGen.generateKeyPair();
+      this.myKeyAgree.init(myKpair.getPrivate());
+      this.e=((javax.crypto.interfaces.DHPublicKey)(myKpair.getPublic())).getY();
+      this.e_array=this.e.toByteArray();
     }
-    return e_array;
+    return this.e_array;
   }
   public byte[] getK() throws Exception{
-    if(K==null){
+    if(this.K==null){
       KeyFactory myKeyFac=KeyFactory.getInstance("DH");
-      DHPublicKeySpec keySpec=new DHPublicKeySpec(f, p, g);
+      DHPublicKeySpec keySpec=new DHPublicKeySpec(this.f, this.p, this.g);
       PublicKey yourPubKey=myKeyFac.generatePublic(keySpec);
-      myKeyAgree.doPhase(yourPubKey, true);
-      byte[] mySharedSecret=myKeyAgree.generateSecret();
-      K=new BigInteger(1, mySharedSecret);
-      K_array=K.toByteArray();
-      K_array=mySharedSecret;
+      this.myKeyAgree.doPhase(yourPubKey, true);
+      byte[] mySharedSecret=this.myKeyAgree.generateSecret();
+      this.K=new BigInteger(1, mySharedSecret);
+      this.K_array=this.K.toByteArray();
+      this.K_array=mySharedSecret;
     }
-    return K_array;
+    return this.K_array;
   }
   public void setP(byte[] p){ setP(new BigInteger(1, p)); }
   public void setG(byte[] g){ setG(new BigInteger(1, g)); }
@@ -91,7 +91,7 @@ public class DH implements com.jcraft.jsch.DH{
 
   private void checkRange(BigInteger tmp) throws Exception {
     BigInteger one = BigInteger.ONE;
-    BigInteger p_1 = p.subtract(one);
+    BigInteger p_1 = this.p.subtract(one);
     // !(1<tmp && tmp<p-1)  We expect tmp is in the range [2, p-2].
     if(!(one.compareTo(tmp) < 0 && tmp.compareTo(p_1) < 0)){
       throw new JSchException("invalid DH value");

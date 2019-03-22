@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -33,11 +33,12 @@ import java.util.Vector;
 
 class UserAuthPublicKey extends UserAuth {
 
+	@SuppressWarnings("null")
 	@Override
 	public boolean start(final Session session) throws Exception {
 		super.start(session);
 
-		final Vector identities = session.getIdentityRepository().getIdentities();
+		final Vector<?> identities = session.getIdentityRepository().getIdentities();
 
 		byte[] passphrase = null;
 		byte[] _username = null;
@@ -57,7 +58,7 @@ class UserAuthPublicKey extends UserAuth {
 					return false;
 				}
 
-				final Identity identity = (Identity) (identities.elementAt(i));
+				final Identity identity = (Identity) identities.elementAt(i);
 				byte[] pubkeyblob = identity.getPublicKeyBlob();
 
 				if (pubkeyblob != null) {
@@ -92,7 +93,7 @@ class UserAuthPublicKey extends UserAuth {
 							this.buf.getByte();
 							this.buf.getByte();
 							final byte[] _message = this.buf.getString();
-							final byte[] lang = this.buf.getString();
+							this.buf.getString();
 							final String message = Util.byte2str(_message);
 							if (this.userinfo != null) {
 								this.userinfo.showMessage(message);
@@ -114,7 +115,7 @@ class UserAuthPublicKey extends UserAuth {
 
 				int count = 5;
 				while (true) {
-					if ((identity.isEncrypted() && passphrase == null)) {
+					if (identity.isEncrypted() && passphrase == null) {
 						if (this.userinfo == null) {
 							throw new JSchException("USERAUTH fail");
 						}
@@ -133,7 +134,7 @@ class UserAuthPublicKey extends UserAuth {
 					if (!identity.isEncrypted() || passphrase != null) {
 						if (identity.setPassphrase(passphrase)) {
 							if (passphrase != null &&
-									(session.getIdentityRepository() instanceof IdentityRepository.Wrapper)) {
+									session.getIdentityRepository() instanceof IdentityRepository.Wrapper) {
 								((IdentityRepository.Wrapper) session.getIdentityRepository()).check();
 							}
 							break;
@@ -192,7 +193,7 @@ class UserAuthPublicKey extends UserAuth {
 				tmp[0] = (byte) (sidlen >>> 24);
 				tmp[1] = (byte) (sidlen >>> 16);
 				tmp[2] = (byte) (sidlen >>> 8);
-				tmp[3] = (byte) (sidlen);
+				tmp[3] = (byte) sidlen;
 				System.arraycopy(sid, 0, tmp, 4, sidlen);
 				System.arraycopy(this.buf.buffer, 5, tmp, 4 + sidlen, this.buf.index - 5);
 				final byte[] signature = identity.getSignature(tmp);
@@ -213,7 +214,7 @@ class UserAuthPublicKey extends UserAuth {
 						this.buf.getByte();
 						this.buf.getByte();
 						final byte[] _message = this.buf.getString();
-						final byte[] lang = this.buf.getString();
+						this.buf.getString();
 						final String message = Util.byte2str(_message);
 						if (this.userinfo != null) {
 							this.userinfo.showMessage(message);

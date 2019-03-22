@@ -45,7 +45,7 @@ public class Random implements com.jcraft.jsch.Random{
     // On MacOSX, 'new SecureRandom()' will use NativePRNG algorithm and
     // it is also slower than SHA1PRNG.
     // On Windows, 'new SecureRandom()' will use SHA1PRNG algorithm.
-    random=new SecureRandom();
+    this.random=new SecureRandom();
 
     /*
     try{ 
@@ -74,8 +74,8 @@ public class Random implements com.jcraft.jsch.Random{
       return;
     }
     */
-    if(len>tmp.length){ tmp=new byte[len]; }
-    random.nextBytes(tmp);
-    System.arraycopy(tmp, 0, foo, start, len);
+    if(len>this.tmp.length){ this.tmp=new byte[len]; }
+    this.random.nextBytes(this.tmp);
+    System.arraycopy(this.tmp, 0, foo, start, len);
   }
 }

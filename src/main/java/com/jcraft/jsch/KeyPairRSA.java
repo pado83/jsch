@@ -66,7 +66,7 @@ public class KeyPairRSA extends KeyPair {
 	void generate(final int key_size) throws JSchException {
 		this.key_size = key_size;
 		try {
-			final Class c = Class.forName(JSch.getConfig("keypairgen.rsa"));
+			final Class<?> c = Class.forName(JSch.getConfig("keypairgen.rsa"));
 			KeyPairGenRSA keypairgen = (KeyPairGenRSA) (c.newInstance());
 			keypairgen.init(key_size);
 			this.pub_array = keypairgen.getE();
@@ -164,7 +164,7 @@ public class KeyPairRSA extends KeyPair {
 					this.pub_array = buf.getMPIntBits();
 					this.prv_array = buf.getMPIntBits();
 					this.n_array = buf.getMPIntBits();
-					final byte[] u_array = buf.getMPIntBits();
+					buf.getMPIntBits();
 					this.p_array = buf.getMPIntBits();
 					this.q_array = buf.getMPIntBits();
 					if (this.n_array != null) {
@@ -372,7 +372,7 @@ public class KeyPairRSA extends KeyPair {
 	@Override
 	public byte[] getSignature(final byte[] data) {
 		try {
-			final Class c = Class.forName(JSch.getConfig("signature.rsa"));
+			final Class<?> c = Class.forName(JSch.getConfig("signature.rsa"));
 			final SignatureRSA rsa = (SignatureRSA) (c.newInstance());
 			rsa.init();
 			rsa.setPrvKey(this.prv_array, this.n_array);
@@ -390,7 +390,7 @@ public class KeyPairRSA extends KeyPair {
 	@Override
 	public Signature getVerifier() {
 		try {
-			final Class c = Class.forName(JSch.getConfig("signature.rsa"));
+			final Class<?> c = Class.forName(JSch.getConfig("signature.rsa"));
 			final SignatureRSA rsa = (SignatureRSA) (c.newInstance());
 			rsa.init();
 

@@ -8,8 +8,8 @@ modification, are permitted provided that the following conditions are met:
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
 
-  2. Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in 
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the distribution.
 
   3. The names of the authors may not be used to endorse or promote products
@@ -75,8 +75,6 @@ public class Session implements Runnable {
 
 	private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
 	private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
-	private byte[] K_S; // the host key
-
 	private byte[] session_id;
 
 	private byte[] IVc2s;
@@ -129,7 +127,7 @@ public class Session implements Runnable {
 			64 + // maximum mac length
 			32; // margin for deflater; deflater may inflate data
 
-	private java.util.Hashtable config = null;
+	private java.util.Hashtable<String, String> config = null;
 
 	private Proxy proxy = null;
 	private UserInfo userinfo;
@@ -170,7 +168,7 @@ public class Session implements Runnable {
 
 		if (this.username == null) {
 			try {
-				this.username = (String) (System.getProperties().get("user.name"));
+				this.username = (String) System.getProperties().get("user.name");
 			} catch (final SecurityException e) {
 				// ignore e
 			}
@@ -193,8 +191,8 @@ public class Session implements Runnable {
 		this.io = new IO();
 		if (random == null) {
 			try {
-				final Class c = Class.forName(this.getConfig("random"));
-				random = (Random) (c.newInstance());
+				final Class<?> c = Class.forName(this.getConfig("random"));
+				random = (Random) c.newInstance();
 			} catch (final Exception e) {
 				throw new JSchException(e.toString(), e);
 			}
@@ -281,9 +279,9 @@ public class Session implements Runnable {
 				}
 
 				if (i <= 3 ||
-						((i != this.buf.buffer.length) &&
+						i != this.buf.buffer.length &&
 								(this.buf.buffer[0] != 'S' || this.buf.buffer[1] != 'S' ||
-										this.buf.buffer[2] != 'H' || this.buf.buffer[3] != '-'))) {
+										this.buf.buffer[2] != 'H' || this.buf.buffer[3] != '-')) {
 					// It must not start with 'SSH-'
 					// System.err.println(new String(buf.buffer, 0, i);
 					continue;
@@ -291,7 +289,7 @@ public class Session implements Runnable {
 
 				if (i == this.buf.buffer.length ||
 						i < 7 || // SSH-1.99 or SSH-2.0
-						(this.buf.buffer[4] == '1' && this.buf.buffer[6] != '9') // SSH-1.5
+						this.buf.buffer[4] == '1' && this.buf.buffer[6] != '9' // SSH-1.5
 				) {
 					throw new JSchException("invalid server's version string");
 				}
@@ -348,7 +346,7 @@ public class Session implements Runnable {
 				this.in_prompt = true;
 				this.checkHost(this.host, this.port, kex);
 				this.in_prompt = false;
-				this.kex_start_time += (System.currentTimeMillis() - tmp);
+				this.kex_start_time += System.currentTimeMillis() - tmp;
 			} catch (final JSchException ee) {
 				this.in_kex = false;
 				this.in_prompt = false;
@@ -387,8 +385,8 @@ public class Session implements Runnable {
 
 			UserAuth ua = null;
 			try {
-				final Class c = Class.forName(this.getConfig("userauth.none"));
-				ua = (UserAuth) (c.newInstance());
+				final Class<?> c = Class.forName(this.getConfig("userauth.none"));
+				ua = (UserAuth) c.newInstance();
 			} catch (final Exception e) {
 				throw new JSchException(e.toString(), e);
 			}
@@ -422,8 +420,8 @@ public class Session implements Runnable {
 
 					final String method = cmethoda[methodi++];
 					boolean acceptable = false;
-					for (int k = 0; k < smethoda.length; k++) {
-						if (smethoda[k].equals(method)) {
+					for (final String element : smethoda) {
+						if (element.equals(method)) {
 							acceptable = true;
 							break;
 						}
@@ -450,10 +448,10 @@ public class Session implements Runnable {
 
 					ua = null;
 					try {
-						Class c = null;
+						Class<?> c = null;
 						if (this.getConfig("userauth." + method) != null) {
 							c = Class.forName(this.getConfig("userauth." + method));
-							ua = (UserAuth) (c.newInstance());
+							ua = (UserAuth) c.newInstance();
 						}
 					} catch (final Exception e) {
 						if (JSch.getLogger().isEnabled(Logger.WARN)) {
@@ -587,14 +585,14 @@ public class Session implements Runnable {
 
 		if (!this.isAuthed &&
 				(this.guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS].equals("none") ||
-						(this.guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC].equals("none")))) {
+						this.guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC].equals("none"))) {
 			throw new JSchException("NONE Cipher should not be chosen before authentification is successed.");
 		}
 
 		KeyExchange kex = null;
 		try {
-			final Class c = Class.forName(this.getConfig(this.guess[KeyExchange.PROPOSAL_KEX_ALGS]));
-			kex = (KeyExchange) (c.newInstance());
+			final Class<?> c = Class.forName(this.getConfig(this.guess[KeyExchange.PROPOSAL_KEX_ALGS]));
+			kex = (KeyExchange) c.newInstance();
 		} catch (final Exception e) {
 			throw new JSchException(e.toString(), e);
 		}
@@ -637,7 +635,7 @@ public class Session implements Runnable {
 		}
 
 		String server_host_key = this.getConfig("server_host_key");
-		final String[] not_available_shks = this.checkSignatures(this.getConfig("CheckSignatures"));
+		final String[] not_available_shks = Session.checkSignatures(this.getConfig("CheckSignatures"));
 		if (not_available_shks != null && not_available_shks.length > 0) {
 			server_host_key = Util.diffString(server_host_key, not_available_shks);
 			if (server_host_key == null) {
@@ -719,13 +717,13 @@ public class Session implements Runnable {
 		final String key_fprint = kex.getFingerPrint();
 
 		if (this.hostKeyAlias == null && port != 22) {
-			chost = ("[" + chost + "]:" + port);
+			chost = "[" + chost + "]:" + port;
 		}
 
 		final HostKeyRepository hkr = this.getHostKeyRepository();
 
 		final String hkh = this.getConfig("HashKnownHosts");
-		if (hkh.equals("yes") && (hkr instanceof KnownHosts)) {
+		if (hkh.equals("yes") && hkr instanceof KnownHosts) {
 			this.hostkey = ((KnownHosts) hkr).createHashedHostKey(chost, K_S);
 		} else {
 			this.hostkey = new HostKey(chost, K_S);
@@ -780,7 +778,7 @@ public class Session implements Runnable {
 		}
 
 		if ((shkc.equals("ask") || shkc.equals("yes")) &&
-				(i != HostKeyRepository.OK) && !insert) {
+				i != HostKeyRepository.OK && !insert) {
 			if (shkc.equals("yes")) {
 				throw new JSchException("reject HostKey: " + this.host);
 			}
@@ -797,9 +795,8 @@ public class Session implements Runnable {
 			} else {
 				if (i == HostKeyRepository.NOT_INCLUDED) {
 					throw new JSchException("UnknownHostKey: " + this.host + ". " + key_type + " key fingerprint is " + key_fprint);
-				} else {
-					throw new JSchException("HostKey has been changed: " + this.host);
 				}
+				throw new JSchException("HostKey has been changed: " + this.host);
 			}
 		}
 
@@ -811,9 +808,9 @@ public class Session implements Runnable {
 		if (i == HostKeyRepository.OK) {
 			final HostKey[] keys = hkr.getHostKey(chost, kex.getKeyAlgorithName());
 			final String _key = Util.byte2str(Util.toBase64(K_S, 0, K_S.length));
-			for (int j = 0; j < keys.length; j++) {
+			for (final HostKey key : keys) {
 				if (keys[i].getKey().equals(_key) &&
-						keys[j].getMarker().equals("@revoked")) {
+						key.getMarker().equals("@revoked")) {
 					if (this.userinfo != null) {
 						this.userinfo.showMessage(
 								"The " + key_type + " host key for " + this.host + " is marked as revoked.\n" +
@@ -921,10 +918,10 @@ public class Session implements Runnable {
 			if (this.s2ccipher != null) {
 				this.s2ccipher.update(buf.buffer, 0, this.s2ccipher_size, buf.buffer, 0);
 			}
-			j = ((buf.buffer[0] << 24) & 0xff000000) |
-					((buf.buffer[1] << 16) & 0x00ff0000) |
-					((buf.buffer[2] << 8) & 0x0000ff00) |
-					((buf.buffer[3]) & 0x000000ff);
+			j = buf.buffer[0] << 24 & 0xff000000 |
+					buf.buffer[1] << 16 & 0x00ff0000 |
+					buf.buffer[2] << 8 & 0x0000ff00 |
+					buf.buffer[3] & 0x000000ff;
 			// RFC 4253 6.1. Maximum Packet Length
 			if (j < 5 || j > PACKET_MAX_SIZE) {
 				this.start_discard(buf, this.s2ccipher, this.s2cmac, j, PACKET_MAX_SIZE);
@@ -933,13 +930,13 @@ public class Session implements Runnable {
 			// if(need<0){
 			// throw new IOException("invalid data");
 			// }
-			if ((buf.index + need) > buf.buffer.length) {
+			if (buf.index + need > buf.buffer.length) {
 				final byte[] foo = new byte[buf.index + need];
 				System.arraycopy(buf.buffer, 0, foo, 0, buf.index);
 				buf.buffer = foo;
 			}
 
-			if ((need % this.s2ccipher_size) != 0) {
+			if (need % this.s2ccipher_size != 0) {
 				final String message = "Bad packet length " + need;
 				if (JSch.getLogger().isEnabled(Logger.FATAL)) {
 					JSch.getLogger().log(Logger.FATAL, message);
@@ -949,7 +946,7 @@ public class Session implements Runnable {
 
 			if (need > 0) {
 				this.io.getByte(buf.buffer, buf.index, need);
-				buf.index += (need);
+				buf.index += need;
 				if (this.s2ccipher != null) {
 					this.s2ccipher.update(buf.buffer, this.s2ccipher_size, need, buf.buffer, this.s2ccipher_size);
 				}
@@ -1137,12 +1134,12 @@ public class Session implements Runnable {
 		this.MACs2c = hash.digest();
 
 		try {
-			Class c;
+			Class<?> c;
 			String method;
 
 			method = this.guess[KeyExchange.PROPOSAL_ENC_ALGS_STOC];
 			c = Class.forName(this.getConfig(method));
-			this.s2ccipher = (Cipher) (c.newInstance());
+			this.s2ccipher = (Cipher) c.newInstance();
 			while (this.s2ccipher.getBlockSize() > this.Es2c.length) {
 				this.buf.reset();
 				this.buf.putMPInt(K);
@@ -1160,8 +1157,8 @@ public class Session implements Runnable {
 
 			method = this.guess[KeyExchange.PROPOSAL_MAC_ALGS_STOC];
 			c = Class.forName(this.getConfig(method));
-			this.s2cmac = (MAC) (c.newInstance());
-			this.MACs2c = this.expandKey(this.buf, K, H, this.MACs2c, hash, this.s2cmac.getBlockSize());
+			this.s2cmac = (MAC) c.newInstance();
+			this.MACs2c = Session.expandKey(this.buf, K, H, this.MACs2c, hash, this.s2cmac.getBlockSize());
 			this.s2cmac.init(this.MACs2c);
 			// mac_buf=new byte[s2cmac.getBlockSize()];
 			this.s2cmac_result1 = new byte[this.s2cmac.getBlockSize()];
@@ -1169,7 +1166,7 @@ public class Session implements Runnable {
 
 			method = this.guess[KeyExchange.PROPOSAL_ENC_ALGS_CTOS];
 			c = Class.forName(this.getConfig(method));
-			this.c2scipher = (Cipher) (c.newInstance());
+			this.c2scipher = (Cipher) c.newInstance();
 			while (this.c2scipher.getBlockSize() > this.Ec2s.length) {
 				this.buf.reset();
 				this.buf.putMPInt(K);
@@ -1187,8 +1184,8 @@ public class Session implements Runnable {
 
 			method = this.guess[KeyExchange.PROPOSAL_MAC_ALGS_CTOS];
 			c = Class.forName(this.getConfig(method));
-			this.c2smac = (MAC) (c.newInstance());
-			this.MACc2s = this.expandKey(this.buf, K, H, this.MACc2s, hash, this.c2smac.getBlockSize());
+			this.c2smac = (MAC) c.newInstance();
+			this.MACc2s = Session.expandKey(this.buf, K, H, this.MACc2s, hash, this.c2smac.getBlockSize());
 			this.c2smac.init(this.MACc2s);
 
 			method = this.guess[KeyExchange.PROPOSAL_COMP_ALGS_CTOS];
@@ -1219,7 +1216,7 @@ public class Session implements Runnable {
 	 * ...
 	 * key = K1 || K2 || K3 || ...
 	 */
-	private byte[] expandKey(final Buffer buf, final byte[] K, final byte[] H, final byte[] key,
+	private static byte[] expandKey(final Buffer buf, final byte[] K, final byte[] H, final byte[] key,
 			final HASH hash, final int required_length) throws Exception {
 		byte[] result = key;
 		final int size = hash.getBlockSize();
@@ -1242,12 +1239,12 @@ public class Session implements Runnable {
 		final long t = this.getTimeout();
 		while (true) {
 			if (this.in_kex) {
-				if (t > 0L && (System.currentTimeMillis() - this.kex_start_time) > t) {
+				if (t > 0L && System.currentTimeMillis() - this.kex_start_time > t) {
 					throw new JSchException("timeout in waiting for rekeying process.");
 				}
 				try {
 					Thread.sleep(10);
-				} catch (final java.lang.InterruptedException e) {} ;
+				} catch (final java.lang.InterruptedException e) {}
 				continue;
 			}
 			synchronized (c) {
@@ -1287,8 +1284,8 @@ public class Session implements Runnable {
 					}
 					if (len != length) {
 						s = packet.shift((int) len,
-								(this.c2scipher != null ? this.c2scipher_size : 8),
-								(this.c2smac != null ? this.c2smac.getBlockSize() : 0));
+								this.c2scipher != null ? this.c2scipher_size : 8,
+								this.c2smac != null ? this.c2smac.getBlockSize() : 0);
 					}
 					command = packet.buffer.getCommand();
 					recipient = c.getRecipient();
@@ -1334,7 +1331,7 @@ public class Session implements Runnable {
 		final long t = this.getTimeout();
 		while (this.in_kex) {
 			if (t > 0L &&
-					(System.currentTimeMillis() - this.kex_start_time) > t &&
+					System.currentTimeMillis() - this.kex_start_time > t &&
 					!this.in_prompt) {
 				throw new JSchException("timeout in waiting for rekeying process.");
 			}
@@ -1353,7 +1350,7 @@ public class Session implements Runnable {
 			}
 			try {
 				Thread.sleep(10);
-			} catch (final java.lang.InterruptedException e) {} ;
+			} catch (final java.lang.InterruptedException e) {}
 		}
 		this._write(packet);
 	}
@@ -1578,11 +1575,11 @@ public class Session implements Runnable {
 						buf.getShort();
 						i = buf.getInt();
 						foo = buf.getString();
-						boolean reply = (buf.getByte() != 0);
+						boolean reply = buf.getByte() != 0;
 						channel = Channel.getChannel(i, this);
 						if (channel != null) {
 							byte reply_type = (byte) SSH_MSG_CHANNEL_FAILURE;
-							if ((Util.byte2str(foo)).equals("exit-status")) {
+							if (Util.byte2str(foo).equals("exit-status")) {
 								i = buf.getInt(); // exit-status
 								channel.setExitStatus(i);
 								reply_type = (byte) SSH_MSG_CHANNEL_SUCCESS;
@@ -1650,7 +1647,7 @@ public class Session implements Runnable {
 						buf.getInt();
 						buf.getShort();
 						foo = buf.getString(); // request name
-						reply = (buf.getByte() != 0);
+						reply = buf.getByte() != 0;
 						if (reply) {
 							packet.reset();
 							buf.putByte((byte) SSH_MSG_REQUEST_FAILURE);
@@ -1772,7 +1769,7 @@ public class Session implements Runnable {
 	/**
 	 * Registers the local port forwarding for loop-back interface.
 	 * If <code>lport</code> is <code>0</code>, the tcp port will be allocated.
-	 * 
+	 *
 	 * @param lport local port for local port forwarding
 	 * @param host host address for local port forwarding
 	 * @param rport remote port number for local port forwarding
@@ -1789,7 +1786,7 @@ public class Session implements Runnable {
 	 * If <code>bind_address</code> is <code>"localhost"</code> or
 	 * <code>null</code>, the listening port will be bound for local use only.
 	 * If <code>lport</code> is <code>0</code>, the tcp port will be allocated.
-	 * 
+	 *
 	 * @param bind_address bind address for local port forwarding
 	 * @param lport local port for local port forwarding
 	 * @param host host address for local port forwarding
@@ -1808,7 +1805,7 @@ public class Session implements Runnable {
 	 * If <code>bind_address</code> is <code>"localhost"</code> or
 	 * <code>null</code>, the listening port will be bound for local use only.
 	 * If <code>lport</code> is <code>0</code>, the tcp port will be allocated.
-	 * 
+	 *
 	 * @param bind_address bind address for local port forwarding
 	 * @param lport local port for local port forwarding
 	 * @param host host address for local port forwarding
@@ -1828,7 +1825,7 @@ public class Session implements Runnable {
 	 * If <code>bind_address</code> is <code>"localhost"</code> or
 	 * <code>null</code>, the listening port will be bound for local use only.
 	 * If <code>lport</code> is <code>0</code>, the tcp port will be allocated.
-	 * 
+	 *
 	 * @param bind_address bind address for local port forwarding
 	 * @param lport local port for local port forwarding
 	 * @param host host address for local port forwarding
@@ -2031,16 +2028,16 @@ public class Session implements Runnable {
 	private Forwarding parseForwarding(String conf) throws JSchException {
 		final String[] tmp = conf.split(" ");
 		if (tmp.length > 1) { // "[bind_address:]port host:hostport"
-			final Vector foo = new Vector();
-			for (int i = 0; i < tmp.length; i++) {
-				if (tmp[i].length() == 0) {
+			final Vector<String> foo = new Vector<String>();
+			for (final String element : tmp) {
+				if (element.length() == 0) {
 					continue;
 				}
-				foo.addElement(tmp[i].trim());
+				foo.addElement(element.trim());
 			}
 			final StringBuffer sb = new StringBuffer(); // join
 			for (int i = 0; i < foo.size(); i++) {
-				sb.append((String) (foo.elementAt(i)));
+				sb.append(foo.elementAt(i));
 				if (i + 1 < foo.size()) {
 					sb.append(":");
 				}
@@ -2249,10 +2246,10 @@ public class Session implements Runnable {
 		final String foo = this.getConfig(method);
 		if (foo != null) {
 			if (method.equals("zlib") ||
-					(this.isAuthed && method.equals("zlib@openssh.com"))) {
+					this.isAuthed && method.equals("zlib@openssh.com")) {
 				try {
-					final Class c = Class.forName(foo);
-					this.deflater = (Compression) (c.newInstance());
+					final Class<?> c = Class.forName(foo);
+					this.deflater = (Compression) c.newInstance();
 					int level = 6;
 					try {
 						level = Integer.parseInt(this.getConfig("compression_level"));
@@ -2276,10 +2273,10 @@ public class Session implements Runnable {
 		final String foo = this.getConfig(method);
 		if (foo != null) {
 			if (method.equals("zlib") ||
-					(this.isAuthed && method.equals("zlib@openssh.com"))) {
+					this.isAuthed && method.equals("zlib@openssh.com")) {
 				try {
-					final Class c = Class.forName(foo);
-					this.inflater = (Compression) (c.newInstance());
+					final Class<?> c = Class.forName(foo);
+					this.inflater = (Compression) c.newInstance();
 					this.inflater.init(Compression.INFLATER, 0);
 				} catch (final Exception ee) {
 					throw new JSchException(ee.toString(), ee);
@@ -2354,14 +2351,14 @@ public class Session implements Runnable {
 		this.setConfig((java.util.Hashtable) newconf);
 	}
 
-	public void setConfig(final java.util.Hashtable newconf) {
+	public void setConfig(final java.util.Hashtable<String, String> newconf) {
 		synchronized (this.lock) {
 			if (this.config == null) {
-				this.config = new java.util.Hashtable();
+				this.config = new java.util.Hashtable<String, String>();
 			}
-			for (final java.util.Enumeration e = newconf.keys(); e.hasMoreElements();) {
-				final String key = (String) (e.nextElement());
-				this.config.put(key, (newconf.get(key)));
+			for (final java.util.Enumeration<String> e = newconf.keys(); e.hasMoreElements();) {
+				final String key = e.nextElement();
+				this.config.put(key, newconf.get(key));
 			}
 		}
 	}
@@ -2369,7 +2366,7 @@ public class Session implements Runnable {
 	public void setConfig(final String key, final String value) {
 		synchronized (this.lock) {
 			if (this.config == null) {
-				this.config = new java.util.Hashtable();
+				this.config = new java.util.Hashtable<String, String>();
 			}
 			this.config.put(key, value);
 		}
@@ -2552,10 +2549,9 @@ public class Session implements Runnable {
 		final String cipherc2s = this.getConfig("cipher.c2s");
 		final String ciphers2c = this.getConfig("cipher.s2c");
 
-		final Vector result = new Vector();
+		final Vector<String> result = new Vector<String>();
 		final String[] _ciphers = Util.split(ciphers, ",");
-		for (int i = 0; i < _ciphers.length; i++) {
-			final String cipher = _ciphers[i];
+		for (final String cipher : _ciphers) {
 			if (ciphers2c.indexOf(cipher) == -1 && cipherc2s.indexOf(cipher) == -1) {
 				continue;
 			}
@@ -2570,9 +2566,9 @@ public class Session implements Runnable {
 		System.arraycopy(result.toArray(), 0, foo, 0, result.size());
 
 		if (JSch.getLogger().isEnabled(Logger.INFO)) {
-			for (int i = 0; i < foo.length; i++) {
+			for (final String element : foo) {
 				JSch.getLogger().log(Logger.INFO,
-						foo[i] + " is not available.");
+						element + " is not available.");
 			}
 		}
 
@@ -2581,8 +2577,8 @@ public class Session implements Runnable {
 
 	static boolean checkCipher(final String cipher) {
 		try {
-			final Class c = Class.forName(cipher);
-			final Cipher _c = (Cipher) (c.newInstance());
+			final Class<?> c = Class.forName(cipher);
+			final Cipher _c = (Cipher) c.newInstance();
 			_c.init(Cipher.ENCRYPT_MODE,
 					new byte[_c.getBlockSize()],
 					new byte[_c.getIVSize()]);
@@ -2602,11 +2598,11 @@ public class Session implements Runnable {
 					"CheckKexes: " + kexes);
 		}
 
-		final java.util.Vector result = new java.util.Vector();
+		final java.util.Vector<String> result = new java.util.Vector<String>();
 		final String[] _kexes = Util.split(kexes, ",");
-		for (int i = 0; i < _kexes.length; i++) {
-			if (!checkKex(this, this.getConfig(_kexes[i]))) {
-				result.addElement(_kexes[i]);
+		for (final String _kexe : _kexes) {
+			if (!checkKex(this, this.getConfig(_kexe))) {
+				result.addElement(_kexe);
 			}
 		}
 		if (result.size() == 0) {
@@ -2616,9 +2612,9 @@ public class Session implements Runnable {
 		System.arraycopy(result.toArray(), 0, foo, 0, result.size());
 
 		if (JSch.getLogger().isEnabled(Logger.INFO)) {
-			for (int i = 0; i < foo.length; i++) {
+			for (final String element : foo) {
 				JSch.getLogger().log(Logger.INFO,
-						foo[i] + " is not available.");
+						element + " is not available.");
 			}
 		}
 
@@ -2627,8 +2623,8 @@ public class Session implements Runnable {
 
 	static boolean checkKex(final Session s, final String kex) {
 		try {
-			final Class c = Class.forName(kex);
-			final KeyExchange _c = (KeyExchange) (c.newInstance());
+			final Class<?> c = Class.forName(kex);
+			final KeyExchange _c = (KeyExchange) c.newInstance();
 			_c.init(s, null, null, null, null);
 			return true;
 		} catch (final Exception e) {
@@ -2636,7 +2632,7 @@ public class Session implements Runnable {
 		}
 	}
 
-	private String[] checkSignatures(final String sigs) {
+	private static String[] checkSignatures(final String sigs) {
 		if (sigs == null || sigs.length() == 0) {
 			return null;
 		}
@@ -2646,15 +2642,15 @@ public class Session implements Runnable {
 					"CheckSignatures: " + sigs);
 		}
 
-		final java.util.Vector result = new java.util.Vector();
+		final java.util.Vector<String> result = new java.util.Vector<String>();
 		final String[] _sigs = Util.split(sigs, ",");
-		for (int i = 0; i < _sigs.length; i++) {
+		for (final String _sig : _sigs) {
 			try {
-				final Class c = Class.forName(JSch.getConfig(_sigs[i]));
-				final Signature sig = (Signature) (c.newInstance());
+				final Class c = Class.forName(JSch.getConfig(_sig));
+				final Signature sig = (Signature) c.newInstance();
 				sig.init();
 			} catch (final Exception e) {
-				result.addElement(_sigs[i]);
+				result.addElement(_sig);
 			}
 		}
 		if (result.size() == 0) {
@@ -2663,9 +2659,9 @@ public class Session implements Runnable {
 		final String[] foo = new String[result.size()];
 		System.arraycopy(result.toArray(), 0, foo, 0, result.size());
 		if (JSch.getLogger().isEnabled(Logger.INFO)) {
-			for (int i = 0; i < foo.length; i++) {
+			for (final String element : foo) {
 				JSch.getLogger().log(Logger.INFO,
-						foo[i] + " is not available.");
+						element + " is not available.");
 			}
 		}
 		return foo;
@@ -2725,7 +2721,7 @@ public class Session implements Runnable {
 	 * public void setProxyCommand(String command){
 	 * setProxy(new ProxyCommand(command));
 	 * }
-	 * 
+	 *
 	 * class ProxyCommand implements Proxy {
 	 * String command;
 	 * Process p = null;
@@ -2820,18 +2816,18 @@ public class Session implements Runnable {
 		if (values != null) {
 			String[] global = configRepository.getConfig("").getValues("IdentityFile");
 			if (global != null) {
-				for (int i = 0; i < global.length; i++) {
-					this.jsch.addIdentity(global[i]);
+				for (final String element : global) {
+					this.jsch.addIdentity(element);
 				}
 			} else {
 				global = new String[0];
 			}
 			if (values.length - global.length > 0) {
 				final IdentityRepository.Wrapper ir = new IdentityRepository.Wrapper(this.jsch.getIdentityRepository(), true);
-				for (int i = 0; i < values.length; i++) {
-					String ifile = values[i];
-					for (int j = 0; j < global.length; j++) {
-						if (!ifile.equals(global[j])) {
+				for (final String value2 : values) {
+					String ifile = value2;
+					for (final String element : global) {
+						if (!ifile.equals(element)) {
 							continue;
 						}
 						ifile = null;
@@ -2909,15 +2905,15 @@ public class Session implements Runnable {
 
 		String[] values = config.getValues("LocalForward");
 		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				this.setPortForwardingL(values[i]);
+			for (final String value : values) {
+				this.setPortForwardingL(value);
 			}
 		}
 
 		values = config.getValues("RemoteForward");
 		if (values != null) {
-			for (int i = 0; i < values.length; i++) {
-				this.setPortForwardingR(values[i]);
+			for (final String value : values) {
+				this.setPortForwardingR(value);
 			}
 		}
 	}
