@@ -29,304 +29,354 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class KeyPairDSA extends KeyPair{
-  private byte[] P_array;
-  private byte[] Q_array;
-  private byte[] G_array;
-  private byte[] pub_array;
-  private byte[] prv_array;
+public class KeyPairDSA extends KeyPair {
 
-  //private int key_size=0;
-  private int key_size=1024;
+	private byte[] P_array;
+	private byte[] Q_array;
+	private byte[] G_array;
+	private byte[] pub_array;
+	private byte[] prv_array;
 
-  public KeyPairDSA(JSch jsch){
-    this(jsch, null, null, null, null, null);
-  }
+	// private int key_size=0;
+	private int key_size = 1024;
 
-  public KeyPairDSA(JSch jsch,
-                    byte[] P_array,
-                    byte[] Q_array,
-                    byte[] G_array,
-                    byte[] pub_array,
-                    byte[] prv_array){
-    super(jsch);
-    this.P_array = P_array;
-    this.Q_array = Q_array;
-    this.G_array = G_array;
-    this.pub_array = pub_array;
-    this.prv_array = prv_array;
-    if(P_array!=null)
-      key_size = (new java.math.BigInteger(P_array)).bitLength();
-  }
-
-  void generate(int key_size) throws JSchException{
-    this.key_size=key_size;
-    try{
-      Class c=Class.forName(jsch.getConfig("keypairgen.dsa"));
-      KeyPairGenDSA keypairgen=(KeyPairGenDSA)(c.newInstance());
-      keypairgen.init(key_size);
-      P_array=keypairgen.getP();
-      Q_array=keypairgen.getQ();
-      G_array=keypairgen.getG();
-      pub_array=keypairgen.getY();
-      prv_array=keypairgen.getX();
-
-      keypairgen=null;
-    }
-    catch(Exception e){
-      //System.err.println("KeyPairDSA: "+e); 
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
-    }
-  }
-
-  private static final byte[] begin=Util.str2byte("-----BEGIN DSA PRIVATE KEY-----");
-  private static final byte[] end=Util.str2byte("-----END DSA PRIVATE KEY-----");
-
-  byte[] getBegin(){ return begin; }
-  byte[] getEnd(){ return end; }
-
-  byte[] getPrivateKey(){
-    int content=
-      1+countLength(1) + 1 +                           // INTEGER
-      1+countLength(P_array.length) + P_array.length + // INTEGER  P
-      1+countLength(Q_array.length) + Q_array.length + // INTEGER  Q
-      1+countLength(G_array.length) + G_array.length + // INTEGER  G
-      1+countLength(pub_array.length) + pub_array.length + // INTEGER  pub
-      1+countLength(prv_array.length) + prv_array.length;  // INTEGER  prv
-
-    int total=
-      1+countLength(content)+content;   // SEQUENCE
-
-    byte[] plain=new byte[total];
-    int index=0;
-    index=writeSEQUENCE(plain, index, content);
-    index=writeINTEGER(plain, index, new byte[1]);  // 0
-    index=writeINTEGER(plain, index, P_array);
-    index=writeINTEGER(plain, index, Q_array);
-    index=writeINTEGER(plain, index, G_array);
-    index=writeINTEGER(plain, index, pub_array);
-    index=writeINTEGER(plain, index, prv_array);
-    return plain;
-  }
-
-  boolean parse(byte[] plain){
-    try{
-
-      if(vendor==VENDOR_FSECURE){
-	if(plain[0]!=0x30){              // FSecure
-	  Buffer buf=new Buffer(plain);
-	  buf.getInt();
-	  P_array=buf.getMPIntBits();
-	  G_array=buf.getMPIntBits();
-	  Q_array=buf.getMPIntBits();
-	  pub_array=buf.getMPIntBits();
-	  prv_array=buf.getMPIntBits();
-          if(P_array!=null)
-            key_size = (new java.math.BigInteger(P_array)).bitLength();
-	  return true;
+	public KeyPairDSA(final JSch jsch) {
+		this(jsch, null, null, null, null, null);
 	}
-	return false;
-      }
-      else if(vendor==VENDOR_PUTTY){
-        Buffer buf=new Buffer(plain);
-        buf.skip(plain.length);
 
-        try {
-          byte[][] tmp = buf.getBytes(1, "");
-          prv_array = tmp[0];
-        }
-        catch(JSchException e){
-          return false;
-        }
+	public KeyPairDSA(final JSch jsch,
+			final byte[] P_array,
+			final byte[] Q_array,
+			final byte[] G_array,
+			final byte[] pub_array,
+			final byte[] prv_array) {
+		super(jsch);
+		this.P_array = P_array;
+		this.Q_array = Q_array;
+		this.G_array = G_array;
+		this.pub_array = pub_array;
+		this.prv_array = prv_array;
+		if (P_array != null) {
+			this.key_size = (new java.math.BigInteger(P_array)).bitLength();
+		}
+	}
 
-        return true;
-      }
+	@Override
+	void generate(final int key_size) throws JSchException {
+		this.key_size = key_size;
+		try {
+			final Class c = Class.forName(JSch.getConfig("keypairgen.dsa"));
+			KeyPairGenDSA keypairgen = (KeyPairGenDSA) (c.newInstance());
+			keypairgen.init(key_size);
+			this.P_array = keypairgen.getP();
+			this.Q_array = keypairgen.getQ();
+			this.G_array = keypairgen.getG();
+			this.pub_array = keypairgen.getY();
+			this.prv_array = keypairgen.getX();
 
-      int index=0;
-      int length=0;
+			keypairgen = null;
+		} catch (final Exception e) {
+			// System.err.println("KeyPairDSA: "+e);
+			if (e instanceof Throwable) {
+				throw new JSchException(e.toString(), e);
+			}
+			throw new JSchException(e.toString());
+		}
+	}
 
-      if(plain[index]!=0x30)return false;
-      index++; // SEQUENCE
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
+	private static final byte[] begin = Util.str2byte("-----BEGIN DSA PRIVATE KEY-----");
+	private static final byte[] end = Util.str2byte("-----END DSA PRIVATE KEY-----");
 
-      if(plain[index]!=0x02)return false;
-      index++; // INTEGER
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
-      index+=length;
+	@Override
+	byte[] getBegin() {
+		return begin;
+	}
 
-      index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
-      P_array=new byte[length];
-      System.arraycopy(plain, index, P_array, 0, length);
-      index+=length;
+	@Override
+	byte[] getEnd() {
+		return end;
+	}
 
-      index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
-      Q_array=new byte[length];
-      System.arraycopy(plain, index, Q_array, 0, length);
-      index+=length;
+	@Override
+	byte[] getPrivateKey() {
+		final int content = 1 + this.countLength(1) + 1 + // INTEGER
+				1 + this.countLength(this.P_array.length) + this.P_array.length + // INTEGER P
+				1 + this.countLength(this.Q_array.length) + this.Q_array.length + // INTEGER Q
+				1 + this.countLength(this.G_array.length) + this.G_array.length + // INTEGER G
+				1 + this.countLength(this.pub_array.length) + this.pub_array.length + // INTEGER pub
+				1 + this.countLength(this.prv_array.length) + this.prv_array.length; // INTEGER prv
 
-      index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
-      G_array=new byte[length];
-      System.arraycopy(plain, index, G_array, 0, length);
-      index+=length;
+		final int total = 1 + this.countLength(content) + content; // SEQUENCE
 
-      index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
-      pub_array=new byte[length];
-      System.arraycopy(plain, index, pub_array, 0, length);
-      index+=length;
+		final byte[] plain = new byte[total];
+		int index = 0;
+		index = this.writeSEQUENCE(plain, index, content);
+		index = this.writeINTEGER(plain, index, new byte[1]); // 0
+		index = this.writeINTEGER(plain, index, this.P_array);
+		index = this.writeINTEGER(plain, index, this.Q_array);
+		index = this.writeINTEGER(plain, index, this.G_array);
+		index = this.writeINTEGER(plain, index, this.pub_array);
+		index = this.writeINTEGER(plain, index, this.prv_array);
+		return plain;
+	}
 
-      index++;
-      length=plain[index++]&0xff;
-      if((length&0x80)!=0){
-        int foo=length&0x7f; length=0;
-        while(foo-->0){ length=(length<<8)+(plain[index++]&0xff); }
-      }
-      prv_array=new byte[length];
-      System.arraycopy(plain, index, prv_array, 0, length);
-      index+=length;
+	@Override
+	boolean parse(final byte[] plain) {
+		try {
 
-      if(P_array!=null)
-        key_size = (new java.math.BigInteger(P_array)).bitLength();
-    }
-    catch(Exception e){
-      //System.err.println(e);
-      //e.printStackTrace();
-      return false;
-    }
-    return true;
-  }
+			if (this.vendor == VENDOR_FSECURE) {
+				if (plain[0] != 0x30) { // FSecure
+					final Buffer buf = new Buffer(plain);
+					buf.getInt();
+					this.P_array = buf.getMPIntBits();
+					this.G_array = buf.getMPIntBits();
+					this.Q_array = buf.getMPIntBits();
+					this.pub_array = buf.getMPIntBits();
+					this.prv_array = buf.getMPIntBits();
+					if (this.P_array != null) {
+						this.key_size = (new java.math.BigInteger(this.P_array)).bitLength();
+					}
+					return true;
+				}
+				return false;
+			} else if (this.vendor == VENDOR_PUTTY) {
+				final Buffer buf = new Buffer(plain);
+				buf.skip(plain.length);
 
-  public byte[] getPublicKeyBlob(){
-    byte[] foo=super.getPublicKeyBlob();
-    if(foo!=null) return foo;
+				try {
+					final byte[][] tmp = buf.getBytes(1, "");
+					this.prv_array = tmp[0];
+				} catch (final JSchException e) {
+					return false;
+				}
 
-    if(P_array==null) return null;
-    byte[][] tmp = new byte[5][];
-    tmp[0] = sshdss;
-    tmp[1] = P_array;
-    tmp[2] = Q_array;
-    tmp[3] = G_array;
-    tmp[4] = pub_array;
-    return Buffer.fromBytes(tmp).buffer;
-  }
+				return true;
+			}
 
-  private static final byte[] sshdss=Util.str2byte("ssh-dss");
-  byte[] getKeyTypeName(){return sshdss;}
-  public int getKeyType(){return DSA;}
+			int index = 0;
+			int length = 0;
 
-  public int getKeySize(){
-    return key_size;
-  }
+			if (plain[index] != 0x30) {
+				return false;
+			}
+			index++; // SEQUENCE
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
 
-  public byte[] getSignature(byte[] data){
-    try{      
-      Class c=Class.forName((String)jsch.getConfig("signature.dss"));
-      SignatureDSA dsa=(SignatureDSA)(c.newInstance());
-      dsa.init();
-      dsa.setPrvKey(prv_array, P_array, Q_array, G_array);
+			if (plain[index] != 0x02) {
+				return false;
+			}
+			index++; // INTEGER
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
+			index += length;
 
-      dsa.update(data);
-      byte[] sig = dsa.sign();
-      byte[][] tmp = new byte[2][];
-      tmp[0] = sshdss;
-      tmp[1] = sig;
-      return Buffer.fromBytes(tmp).buffer;
-    }
-    catch(Exception e){
-      //System.err.println("e "+e);
-    }
-    return null;
-  }
+			index++;
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
+			this.P_array = new byte[length];
+			System.arraycopy(plain, index, this.P_array, 0, length);
+			index += length;
 
-  public Signature getVerifier(){
-    try{      
-      Class c=Class.forName((String)jsch.getConfig("signature.dss"));
-      SignatureDSA dsa=(SignatureDSA)(c.newInstance());
-      dsa.init();
+			index++;
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
+			this.Q_array = new byte[length];
+			System.arraycopy(plain, index, this.Q_array, 0, length);
+			index += length;
 
-      if(pub_array == null && P_array == null && getPublicKeyBlob()!=null){
-        Buffer buf = new Buffer(getPublicKeyBlob());
-        buf.getString();
-        P_array = buf.getString();
-        Q_array = buf.getString();
-        G_array = buf.getString();
-        pub_array = buf.getString();
-      } 
+			index++;
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
+			this.G_array = new byte[length];
+			System.arraycopy(plain, index, this.G_array, 0, length);
+			index += length;
 
-      dsa.setPubKey(pub_array, P_array, Q_array, G_array);
-      return dsa;
-    }
-    catch(Exception e){
-      //System.err.println("e "+e);
-    }
-    return null;
-  }
+			index++;
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
+			this.pub_array = new byte[length];
+			System.arraycopy(plain, index, this.pub_array, 0, length);
+			index += length;
 
-  static KeyPair fromSSHAgent(JSch jsch, Buffer buf) throws JSchException {
+			index++;
+			length = plain[index++] & 0xff;
+			if ((length & 0x80) != 0) {
+				int foo = length & 0x7f;
+				length = 0;
+				while (foo-- > 0) {
+					length = (length << 8) + (plain[index++] & 0xff);
+				}
+			}
+			this.prv_array = new byte[length];
+			System.arraycopy(plain, index, this.prv_array, 0, length);
+			index += length;
 
-    byte[][] tmp = buf.getBytes(7, "invalid key format");
+			if (this.P_array != null) {
+				this.key_size = (new java.math.BigInteger(this.P_array)).bitLength();
+			}
+		} catch (final Exception e) {
+			// System.err.println(e);
+			// e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
-    byte[] P_array = tmp[1];
-    byte[] Q_array = tmp[2];
-    byte[] G_array = tmp[3];
-    byte[] pub_array = tmp[4];
-    byte[] prv_array = tmp[5];
-    KeyPairDSA kpair = new KeyPairDSA(jsch,
-                                      P_array, Q_array, G_array,
-                                      pub_array, prv_array);
-    kpair.publicKeyComment = new String(tmp[6]);
-    kpair.vendor=VENDOR_OPENSSH;
-    return kpair;
-  }
+	@Override
+	public byte[] getPublicKeyBlob() {
+		final byte[] foo = super.getPublicKeyBlob();
+		if (foo != null) {
+			return foo;
+		}
 
-  public byte[] forSSHAgent() throws JSchException {
-    if(isEncrypted()){
-      throw new JSchException("key is encrypted.");
-    }
-    Buffer buf = new Buffer();
-    buf.putString(sshdss);
-    buf.putString(P_array);
-    buf.putString(Q_array);
-    buf.putString(G_array);
-    buf.putString(pub_array);
-    buf.putString(prv_array);
-    buf.putString(Util.str2byte(publicKeyComment));
-    byte[] result = new byte[buf.getLength()];
-    buf.getByte(result, 0, result.length);
-    return result;
-  }
+		if (this.P_array == null) {
+			return null;
+		}
+		final byte[][] tmp = new byte[5][];
+		tmp[0] = sshdss;
+		tmp[1] = this.P_array;
+		tmp[2] = this.Q_array;
+		tmp[3] = this.G_array;
+		tmp[4] = this.pub_array;
+		return Buffer.fromBytes(tmp).buffer;
+	}
 
-  public void dispose(){
-    super.dispose();
-    Util.bzero(prv_array);
-  }
+	private static final byte[] sshdss = Util.str2byte("ssh-dss");
+
+	@Override
+	byte[] getKeyTypeName() {
+		return sshdss;
+	}
+
+	@Override
+	public int getKeyType() {
+		return DSA;
+	}
+
+	@Override
+	public int getKeySize() {
+		return this.key_size;
+	}
+
+	@Override
+	public byte[] getSignature(final byte[] data) {
+		try {
+			final Class c = Class.forName(JSch.getConfig("signature.dss"));
+			final SignatureDSA dsa = (SignatureDSA) (c.newInstance());
+			dsa.init();
+			dsa.setPrvKey(this.prv_array, this.P_array, this.Q_array, this.G_array);
+
+			dsa.update(data);
+			final byte[] sig = dsa.sign();
+			final byte[][] tmp = new byte[2][];
+			tmp[0] = sshdss;
+			tmp[1] = sig;
+			return Buffer.fromBytes(tmp).buffer;
+		} catch (final Exception e) {
+			// System.err.println("e "+e);
+		}
+		return null;
+	}
+
+	@Override
+	public Signature getVerifier() {
+		try {
+			final Class c = Class.forName(JSch.getConfig("signature.dss"));
+			final SignatureDSA dsa = (SignatureDSA) (c.newInstance());
+			dsa.init();
+
+			if (this.pub_array == null && this.P_array == null && this.getPublicKeyBlob() != null) {
+				final Buffer buf = new Buffer(this.getPublicKeyBlob());
+				buf.getString();
+				this.P_array = buf.getString();
+				this.Q_array = buf.getString();
+				this.G_array = buf.getString();
+				this.pub_array = buf.getString();
+			}
+
+			dsa.setPubKey(this.pub_array, this.P_array, this.Q_array, this.G_array);
+			return dsa;
+		} catch (final Exception e) {
+			// System.err.println("e "+e);
+		}
+		return null;
+	}
+
+	static KeyPair fromSSHAgent(final JSch jsch, final Buffer buf) throws JSchException {
+
+		final byte[][] tmp = buf.getBytes(7, "invalid key format");
+
+		final byte[] P_array = tmp[1];
+		final byte[] Q_array = tmp[2];
+		final byte[] G_array = tmp[3];
+		final byte[] pub_array = tmp[4];
+		final byte[] prv_array = tmp[5];
+		final KeyPairDSA kpair = new KeyPairDSA(jsch,
+				P_array, Q_array, G_array,
+				pub_array, prv_array);
+		kpair.publicKeyComment = new String(tmp[6]);
+		kpair.vendor = VENDOR_OPENSSH;
+		return kpair;
+	}
+
+	@Override
+	public byte[] forSSHAgent() throws JSchException {
+		if (this.isEncrypted()) {
+			throw new JSchException("key is encrypted.");
+		}
+		final Buffer buf = new Buffer();
+		buf.putString(sshdss);
+		buf.putString(this.P_array);
+		buf.putString(this.Q_array);
+		buf.putString(this.G_array);
+		buf.putString(this.pub_array);
+		buf.putString(this.prv_array);
+		buf.putString(Util.str2byte(this.publicKeyComment));
+		final byte[] result = new byte[buf.getLength()];
+		buf.getByte(result, 0, result.length);
+		return result;
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		Util.bzero(this.prv_array);
+	}
 }

@@ -29,7 +29,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /*
@@ -48,247 +47,328 @@ import java.util.Date;
 */
 public class SftpATTRS {
 
-  static final int S_ISUID = 04000; // set user ID on execution
-  static final int S_ISGID = 02000; // set group ID on execution
-  static final int S_ISVTX = 01000; // sticky bit   ****** NOT DOCUMENTED *****
+	static final int S_ISUID = 04000; // set user ID on execution
+	static final int S_ISGID = 02000; // set group ID on execution
+	static final int S_ISVTX = 01000; // sticky bit ****** NOT DOCUMENTED *****
 
-  static final int S_IRUSR = 00400; // read by owner
-  static final int S_IWUSR = 00200; // write by owner
-  static final int S_IXUSR = 00100; // execute/search by owner
-  static final int S_IREAD = 00400; // read by owner
-  static final int S_IWRITE= 00200; // write by owner
-  static final int S_IEXEC = 00100; // execute/search by owner
+	static final int S_IRUSR = 00400; // read by owner
+	static final int S_IWUSR = 00200; // write by owner
+	static final int S_IXUSR = 00100; // execute/search by owner
+	static final int S_IREAD = 00400; // read by owner
+	static final int S_IWRITE = 00200; // write by owner
+	static final int S_IEXEC = 00100; // execute/search by owner
 
-  static final int S_IRGRP = 00040; // read by group
-  static final int S_IWGRP = 00020; // write by group
-  static final int S_IXGRP = 00010; // execute/search by group
+	static final int S_IRGRP = 00040; // read by group
+	static final int S_IWGRP = 00020; // write by group
+	static final int S_IXGRP = 00010; // execute/search by group
 
-  static final int S_IROTH = 00004; // read by others
-  static final int S_IWOTH = 00002; // write by others
-  static final int S_IXOTH = 00001; // execute/search by others
+	static final int S_IROTH = 00004; // read by others
+	static final int S_IWOTH = 00002; // write by others
+	static final int S_IXOTH = 00001; // execute/search by others
 
-  private static final int pmask = 0xFFF;
+	private static final int pmask = 0xFFF;
 
-  public String getPermissionsString() {
-    StringBuffer buf = new StringBuffer(10);
+	public String getPermissionsString() {
+		final StringBuffer buf = new StringBuffer(10);
 
-    if(isDir()) buf.append('d');
-    else if(isLink()) buf.append('l');
-    else buf.append('-');
+		if (this.isDir()) {
+			buf.append('d');
+		} else if (this.isLink()) {
+			buf.append('l');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IRUSR)!=0) buf.append('r');
-    else buf.append('-');
+		if ((this.permissions & S_IRUSR) != 0) {
+			buf.append('r');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IWUSR)!=0) buf.append('w');
-    else buf.append('-');
+		if ((this.permissions & S_IWUSR) != 0) {
+			buf.append('w');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_ISUID)!=0) buf.append('s');
-    else if ((permissions & S_IXUSR)!=0) buf.append('x');
-    else buf.append('-');
+		if ((this.permissions & S_ISUID) != 0) {
+			buf.append('s');
+		} else if ((this.permissions & S_IXUSR) != 0) {
+			buf.append('x');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IRGRP)!=0) buf.append('r');
-    else buf.append('-');
+		if ((this.permissions & S_IRGRP) != 0) {
+			buf.append('r');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IWGRP)!=0) buf.append('w');
-    else buf.append('-');
+		if ((this.permissions & S_IWGRP) != 0) {
+			buf.append('w');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_ISGID)!=0) buf.append('s');
-    else if((permissions & S_IXGRP)!=0) buf.append('x');
-    else buf.append('-');
+		if ((this.permissions & S_ISGID) != 0) {
+			buf.append('s');
+		} else if ((this.permissions & S_IXGRP) != 0) {
+			buf.append('x');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IROTH) != 0) buf.append('r');
-    else buf.append('-');
+		if ((this.permissions & S_IROTH) != 0) {
+			buf.append('r');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IWOTH) != 0) buf.append('w');
-    else buf.append('-');
+		if ((this.permissions & S_IWOTH) != 0) {
+			buf.append('w');
+		} else {
+			buf.append('-');
+		}
 
-    if((permissions & S_IXOTH) != 0) buf.append('x');
-    else buf.append('-');
-    return (buf.toString());
-  }
-
-  public String  getAtimeString(){
-    Date date= new Date(((long)atime)*1000L);
-    return (date.toString());
-  }
-
-  public String  getMtimeString(){
-    Date date= new Date(((long)mtime)*1000L);
-    return (date.toString());
-  }
-
-  public static final int SSH_FILEXFER_ATTR_SIZE=         0x00000001;
-  public static final int SSH_FILEXFER_ATTR_UIDGID=       0x00000002;
-  public static final int SSH_FILEXFER_ATTR_PERMISSIONS=  0x00000004;
-  public static final int SSH_FILEXFER_ATTR_ACMODTIME=    0x00000008;
-  public static final int SSH_FILEXFER_ATTR_EXTENDED=     0x80000000;
-
-  static final int S_IFMT=0xf000;
-  static final int S_IFIFO=0x1000;
-  static final int S_IFCHR=0x2000;
-  static final int S_IFDIR=0x4000;
-  static final int S_IFBLK=0x6000;
-  static final int S_IFREG=0x8000;
-  static final int S_IFLNK=0xa000;
-  static final int S_IFSOCK=0xc000;
-
-  int flags=0;
-  long size;
-  int uid;
-  int gid;
-  int permissions;
-  int atime;
-  int mtime;
-  String[] extended=null;
-
-  private SftpATTRS(){
-  }
-
-  static SftpATTRS getATTR(Buffer buf){
-    SftpATTRS attr=new SftpATTRS();	
-    attr.flags=buf.getInt();
-    if((attr.flags&SSH_FILEXFER_ATTR_SIZE)!=0){ attr.size=buf.getLong(); }
-    if((attr.flags&SSH_FILEXFER_ATTR_UIDGID)!=0){
-      attr.uid=buf.getInt(); attr.gid=buf.getInt();
-    }
-    if((attr.flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0){ 
-      attr.permissions=buf.getInt();
-    }
-    if((attr.flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0){ 
-      attr.atime=buf.getInt();
-    }
-    if((attr.flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0){ 
-      attr.mtime=buf.getInt(); 
-    }
-    if((attr.flags&SSH_FILEXFER_ATTR_EXTENDED)!=0){
-      int count=buf.getInt();
-      if(count>0){
-	attr.extended=new String[count*2];
-	for(int i=0; i<count; i++){
-	  attr.extended[i*2]=Util.byte2str(buf.getString());
-	  attr.extended[i*2+1]=Util.byte2str(buf.getString());
+		if ((this.permissions & S_IXOTH) != 0) {
+			buf.append('x');
+		} else {
+			buf.append('-');
+		}
+		return (buf.toString());
 	}
-      }
-    }
-    return attr;
-  } 
 
-  int length(){
-    int len=4;
-
-    if((flags&SSH_FILEXFER_ATTR_SIZE)!=0){ len+=8; }
-    if((flags&SSH_FILEXFER_ATTR_UIDGID)!=0){ len+=8; }
-    if((flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0){ len+=4; }
-    if((flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0){ len+=8; }
-    if((flags&SSH_FILEXFER_ATTR_EXTENDED)!=0){
-      len+=4;
-      int count=extended.length/2;
-      if(count>0){
-	for(int i=0; i<count; i++){
-	  len+=4; len+=extended[i*2].length();
-	  len+=4; len+=extended[i*2+1].length();
+	public String getAtimeString() {
+		final Date date = new Date((this.atime) * 1000L);
+		return (date.toString());
 	}
-      }
-    }
-    return len;
-  }
 
-  void dump(Buffer buf){
-    buf.putInt(flags);
-    if((flags&SSH_FILEXFER_ATTR_SIZE)!=0){ buf.putLong(size); }
-    if((flags&SSH_FILEXFER_ATTR_UIDGID)!=0){
-      buf.putInt(uid); buf.putInt(gid);
-    }
-    if((flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0){ 
-      buf.putInt(permissions);
-    }
-    if((flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0){ buf.putInt(atime); }
-    if((flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0){ buf.putInt(mtime); }
-    if((flags&SSH_FILEXFER_ATTR_EXTENDED)!=0){
-      int count=extended.length/2;
-      if(count>0){
-	for(int i=0; i<count; i++){
-	  buf.putString(Util.str2byte(extended[i*2]));
-	  buf.putString(Util.str2byte(extended[i*2+1]));
+	public String getMtimeString() {
+		final Date date = new Date((this.mtime) * 1000L);
+		return (date.toString());
 	}
-      }
-    }
-  }
-  void setFLAGS(int flags){
-    this.flags=flags;
-  }
-  public void setSIZE(long size){
-    flags|=SSH_FILEXFER_ATTR_SIZE;
-    this.size=size;
-  }
-  public void setUIDGID(int uid, int gid){
-    flags|=SSH_FILEXFER_ATTR_UIDGID;
-    this.uid=uid;
-    this.gid=gid;
-  }
-  public void setACMODTIME(int atime, int mtime){
-    flags|=SSH_FILEXFER_ATTR_ACMODTIME;
-    this.atime=atime;
-    this.mtime=mtime;
-  }
-  public void setPERMISSIONS(int permissions){
-    flags|=SSH_FILEXFER_ATTR_PERMISSIONS;
-    permissions=(this.permissions&~pmask)|(permissions&pmask);
-    this.permissions=permissions;
-  }
 
-  private boolean isType(int mask) {
-    return (flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0 &&
-           (permissions&S_IFMT)==mask;
-  }
+	public static final int SSH_FILEXFER_ATTR_SIZE = 0x00000001;
+	public static final int SSH_FILEXFER_ATTR_UIDGID = 0x00000002;
+	public static final int SSH_FILEXFER_ATTR_PERMISSIONS = 0x00000004;
+	public static final int SSH_FILEXFER_ATTR_ACMODTIME = 0x00000008;
+	public static final int SSH_FILEXFER_ATTR_EXTENDED = 0x80000000;
 
-  public boolean isReg(){
-    return isType(S_IFREG);
-  }
+	static final int S_IFMT = 0xf000;
+	static final int S_IFIFO = 0x1000;
+	static final int S_IFCHR = 0x2000;
+	static final int S_IFDIR = 0x4000;
+	static final int S_IFBLK = 0x6000;
+	static final int S_IFREG = 0x8000;
+	static final int S_IFLNK = 0xa000;
+	static final int S_IFSOCK = 0xc000;
 
-  public boolean isDir(){
-    return isType(S_IFDIR);
-  }      
+	int flags = 0;
+	long size;
+	int uid;
+	int gid;
+	int permissions;
+	int atime;
+	int mtime;
+	String[] extended = null;
 
-  public boolean isChr(){
-    return isType(S_IFCHR);
-  }      
+	private SftpATTRS() {}
 
-  public boolean isBlk(){
-    return isType(S_IFBLK);
-  }      
+	static SftpATTRS getATTR(final Buffer buf) {
+		final SftpATTRS attr = new SftpATTRS();
+		attr.flags = buf.getInt();
+		if ((attr.flags & SSH_FILEXFER_ATTR_SIZE) != 0) {
+			attr.size = buf.getLong();
+		}
+		if ((attr.flags & SSH_FILEXFER_ATTR_UIDGID) != 0) {
+			attr.uid = buf.getInt();
+			attr.gid = buf.getInt();
+		}
+		if ((attr.flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0) {
+			attr.permissions = buf.getInt();
+		}
+		if ((attr.flags & SSH_FILEXFER_ATTR_ACMODTIME) != 0) {
+			attr.atime = buf.getInt();
+		}
+		if ((attr.flags & SSH_FILEXFER_ATTR_ACMODTIME) != 0) {
+			attr.mtime = buf.getInt();
+		}
+		if ((attr.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
+			final int count = buf.getInt();
+			if (count > 0) {
+				attr.extended = new String[count * 2];
+				for (int i = 0; i < count; i++) {
+					attr.extended[i * 2] = Util.byte2str(buf.getString());
+					attr.extended[i * 2 + 1] = Util.byte2str(buf.getString());
+				}
+			}
+		}
+		return attr;
+	}
 
-  public boolean isFifo(){
-    return isType(S_IFIFO);
-  }      
+	int length() {
+		int len = 4;
 
-  public boolean isLink(){
-    return isType(S_IFLNK);
-  }
+		if ((this.flags & SSH_FILEXFER_ATTR_SIZE) != 0) {
+			len += 8;
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_UIDGID) != 0) {
+			len += 8;
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0) {
+			len += 4;
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_ACMODTIME) != 0) {
+			len += 8;
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
+			len += 4;
+			final int count = this.extended.length / 2;
+			if (count > 0) {
+				for (int i = 0; i < count; i++) {
+					len += 4;
+					len += this.extended[i * 2].length();
+					len += 4;
+					len += this.extended[i * 2 + 1].length();
+				}
+			}
+		}
+		return len;
+	}
 
-  public boolean isSock(){
-    return isType(S_IFSOCK);
-  }
+	void dump(final Buffer buf) {
+		buf.putInt(this.flags);
+		if ((this.flags & SSH_FILEXFER_ATTR_SIZE) != 0) {
+			buf.putLong(this.size);
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_UIDGID) != 0) {
+			buf.putInt(this.uid);
+			buf.putInt(this.gid);
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0) {
+			buf.putInt(this.permissions);
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_ACMODTIME) != 0) {
+			buf.putInt(this.atime);
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_ACMODTIME) != 0) {
+			buf.putInt(this.mtime);
+		}
+		if ((this.flags & SSH_FILEXFER_ATTR_EXTENDED) != 0) {
+			final int count = this.extended.length / 2;
+			if (count > 0) {
+				for (int i = 0; i < count; i++) {
+					buf.putString(Util.str2byte(this.extended[i * 2]));
+					buf.putString(Util.str2byte(this.extended[i * 2 + 1]));
+				}
+			}
+		}
+	}
 
-  public int getFlags() { return flags; }
-  public long getSize() { return size; }
-  public int getUId() { return uid; }
-  public int getGId() { return gid; }
-  public int getPermissions() { return permissions; }
-  public int getATime() { return atime; }
-  public int getMTime() { return mtime; }
-  public String[] getExtended() { return extended; }
+	void setFLAGS(final int flags) {
+		this.flags = flags;
+	}
 
-  public String toString() {
-    return (getPermissionsString()+" "+getUId()+" "+getGId()+" "+getSize()+" "+getMtimeString());
-  }
-  /*
-  public String toString(){
-    return (((flags&SSH_FILEXFER_ATTR_SIZE)!=0) ? ("size:"+size+" ") : "")+
-           (((flags&SSH_FILEXFER_ATTR_UIDGID)!=0) ? ("uid:"+uid+",gid:"+gid+" ") : "")+
-           (((flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0) ? ("permissions:0x"+Integer.toHexString(permissions)+" ") : "")+
-           (((flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0) ? ("atime:"+atime+",mtime:"+mtime+" ") : "")+
-           (((flags&SSH_FILEXFER_ATTR_EXTENDED)!=0) ? ("extended:?"+" ") : "");
-  }
-  */
+	public void setSIZE(final long size) {
+		this.flags |= SSH_FILEXFER_ATTR_SIZE;
+		this.size = size;
+	}
+
+	public void setUIDGID(final int uid, final int gid) {
+		this.flags |= SSH_FILEXFER_ATTR_UIDGID;
+		this.uid = uid;
+		this.gid = gid;
+	}
+
+	public void setACMODTIME(final int atime, final int mtime) {
+		this.flags |= SSH_FILEXFER_ATTR_ACMODTIME;
+		this.atime = atime;
+		this.mtime = mtime;
+	}
+
+	public void setPERMISSIONS(int permissions) {
+		this.flags |= SSH_FILEXFER_ATTR_PERMISSIONS;
+		permissions = (this.permissions & ~pmask) | (permissions & pmask);
+		this.permissions = permissions;
+	}
+
+	private boolean isType(final int mask) {
+		return (this.flags & SSH_FILEXFER_ATTR_PERMISSIONS) != 0 &&
+				(this.permissions & S_IFMT) == mask;
+	}
+
+	public boolean isReg() {
+		return this.isType(S_IFREG);
+	}
+
+	public boolean isDir() {
+		return this.isType(S_IFDIR);
+	}
+
+	public boolean isChr() {
+		return this.isType(S_IFCHR);
+	}
+
+	public boolean isBlk() {
+		return this.isType(S_IFBLK);
+	}
+
+	public boolean isFifo() {
+		return this.isType(S_IFIFO);
+	}
+
+	public boolean isLink() {
+		return this.isType(S_IFLNK);
+	}
+
+	public boolean isSock() {
+		return this.isType(S_IFSOCK);
+	}
+
+	public int getFlags() {
+		return this.flags;
+	}
+
+	public long getSize() {
+		return this.size;
+	}
+
+	public int getUId() {
+		return this.uid;
+	}
+
+	public int getGId() {
+		return this.gid;
+	}
+
+	public int getPermissions() {
+		return this.permissions;
+	}
+
+	public int getATime() {
+		return this.atime;
+	}
+
+	public int getMTime() {
+		return this.mtime;
+	}
+
+	public String[] getExtended() {
+		return this.extended;
+	}
+
+	@Override
+	public String toString() {
+		return (this.getPermissionsString() + " " + this.getUId() + " " + this.getGId() + " " + this.getSize() + " " + this.getMtimeString());
+	}
+	/*
+	 * public String toString(){
+	 * return (((flags&SSH_FILEXFER_ATTR_SIZE)!=0) ? ("size:"+size+" ") : "")+
+	 * (((flags&SSH_FILEXFER_ATTR_UIDGID)!=0) ? ("uid:"+uid+",gid:"+gid+" ") : "")+
+	 * (((flags&SSH_FILEXFER_ATTR_PERMISSIONS)!=0) ? ("permissions:0x"+Integer.toHexString(permissions)+" ") : "")+
+	 * (((flags&SSH_FILEXFER_ATTR_ACMODTIME)!=0) ? ("atime:"+atime+",mtime:"+mtime+" ") : "")+
+	 * (((flags&SSH_FILEXFER_ATTR_EXTENDED)!=0) ? ("extended:?"+" ") : "");
+	 * }
+	 */
 }

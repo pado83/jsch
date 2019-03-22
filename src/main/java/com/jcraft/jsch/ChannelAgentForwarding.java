@@ -29,238 +29,231 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.net.*;
 import java.util.Vector;
 
-class ChannelAgentForwarding extends Channel{
+class ChannelAgentForwarding extends Channel {
 
-  static private final int LOCAL_WINDOW_SIZE_MAX=0x20000;
-  static private final int LOCAL_MAXIMUM_PACKET_SIZE=0x4000;
+	static private final int LOCAL_WINDOW_SIZE_MAX = 0x20000;
+	static private final int LOCAL_MAXIMUM_PACKET_SIZE = 0x4000;
 
-  private final byte SSH_AGENTC_REQUEST_RSA_IDENTITIES = 1;
-  private final byte SSH_AGENT_RSA_IDENTITIES_ANSWER = 2;
-  private final byte SSH_AGENTC_RSA_CHALLENGE = 3;
-  private final byte SSH_AGENT_RSA_RESPONSE = 4;
-  private final byte SSH_AGENT_FAILURE = 5;
-  private final byte SSH_AGENT_SUCCESS = 6;
-  private final byte SSH_AGENTC_ADD_RSA_IDENTITY	= 7;
-  private final byte SSH_AGENTC_REMOVE_RSA_IDENTITY = 8;
-  private final byte SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES = 9;
+	private final byte SSH_AGENTC_REQUEST_RSA_IDENTITIES = 1;
+	private final byte SSH_AGENT_RSA_IDENTITIES_ANSWER = 2;
+	private final byte SSH_AGENTC_RSA_CHALLENGE = 3;
+	private final byte SSH_AGENT_RSA_RESPONSE = 4;
+	private final byte SSH_AGENT_FAILURE = 5;
+	private final byte SSH_AGENT_SUCCESS = 6;
+	private final byte SSH_AGENTC_ADD_RSA_IDENTITY = 7;
+	private final byte SSH_AGENTC_REMOVE_RSA_IDENTITY = 8;
+	private final byte SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES = 9;
 
-  private final byte SSH2_AGENTC_REQUEST_IDENTITIES=11;
-  private final byte SSH2_AGENT_IDENTITIES_ANSWER=12;
-  private final byte SSH2_AGENTC_SIGN_REQUEST=13;
-  private final byte SSH2_AGENT_SIGN_RESPONSE=14;
-  private final byte SSH2_AGENTC_ADD_IDENTITY=17;
-  private final byte SSH2_AGENTC_REMOVE_IDENTITY=18;
-  private final byte SSH2_AGENTC_REMOVE_ALL_IDENTITIES=19;
-  private final byte SSH2_AGENT_FAILURE=30;
+	private final byte SSH2_AGENTC_REQUEST_IDENTITIES = 11;
+	private final byte SSH2_AGENT_IDENTITIES_ANSWER = 12;
+	private final byte SSH2_AGENTC_SIGN_REQUEST = 13;
+	private final byte SSH2_AGENT_SIGN_RESPONSE = 14;
+	private final byte SSH2_AGENTC_ADD_IDENTITY = 17;
+	private final byte SSH2_AGENTC_REMOVE_IDENTITY = 18;
+	private final byte SSH2_AGENTC_REMOVE_ALL_IDENTITIES = 19;
+	private final byte SSH2_AGENT_FAILURE = 30;
 
-  boolean init=true;
+	boolean init = true;
 
-  private Buffer rbuf=null;
-  private Buffer wbuf=null;
-  private Packet packet=null;
-  private Buffer mbuf=null;
+	private Buffer rbuf = null;
+	private Buffer wbuf = null;
+	private Packet packet = null;
+	private Buffer mbuf = null;
 
-  ChannelAgentForwarding(){
-    super();
+	ChannelAgentForwarding() {
+		super();
 
-    setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
-    setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
-    setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
+		this.setLocalWindowSizeMax(LOCAL_WINDOW_SIZE_MAX);
+		this.setLocalWindowSize(LOCAL_WINDOW_SIZE_MAX);
+		this.setLocalPacketSize(LOCAL_MAXIMUM_PACKET_SIZE);
 
-    type=Util.str2byte("auth-agent@openssh.com");
-    rbuf=new Buffer();
-    rbuf.reset();
-    //wbuf=new Buffer(rmpsize);
-    //packet=new Packet(wbuf);
-    mbuf=new Buffer();
-    connected=true;
-  }
+		this.type = Util.str2byte("auth-agent@openssh.com");
+		this.rbuf = new Buffer();
+		this.rbuf.reset();
+		// wbuf=new Buffer(rmpsize);
+		// packet=new Packet(wbuf);
+		this.mbuf = new Buffer();
+		this.connected = true;
+	}
 
-  public void run(){
-    try{
-      sendOpenConfirmation();
-    }
-    catch(Exception e){
-      close=true;
-      disconnect();
-    }
-  }
+	@Override
+	public void run() {
+		try {
+			this.sendOpenConfirmation();
+		} catch (final Exception e) {
+			this.close = true;
+			this.disconnect();
+		}
+	}
 
-  void write(byte[] foo, int s, int l) throws java.io.IOException {
+	@Override
+	void write(final byte[] foo, final int s, final int l) throws java.io.IOException {
 
-    if(packet==null){
-      wbuf=new Buffer(rmpsize);
-      packet=new Packet(wbuf);
-    }
+		if (this.packet == null) {
+			this.wbuf = new Buffer(this.rmpsize);
+			this.packet = new Packet(this.wbuf);
+		}
 
-    rbuf.shift();
-    if(rbuf.buffer.length<rbuf.index+l){
-      byte[] newbuf=new byte[rbuf.s+l];
-      System.arraycopy(rbuf.buffer, 0, newbuf, 0, rbuf.buffer.length);
-      rbuf.buffer=newbuf;
-    }
+		this.rbuf.shift();
+		if (this.rbuf.buffer.length < this.rbuf.index + l) {
+			final byte[] newbuf = new byte[this.rbuf.s + l];
+			System.arraycopy(this.rbuf.buffer, 0, newbuf, 0, this.rbuf.buffer.length);
+			this.rbuf.buffer = newbuf;
+		}
 
-    rbuf.putByte(foo, s, l);
+		this.rbuf.putByte(foo, s, l);
 
-    int mlen=rbuf.getInt();
-    if(mlen>rbuf.getLength()){
-      rbuf.s-=4;
-      return;
-    }
+		final int mlen = this.rbuf.getInt();
+		if (mlen > this.rbuf.getLength()) {
+			this.rbuf.s -= 4;
+			return;
+		}
 
-    int typ=rbuf.getByte();
+		final int typ = this.rbuf.getByte();
 
-    Session _session=null;
-    try{
-      _session=getSession();
-    }
-    catch(JSchException e){
-      throw new java.io.IOException(e.toString());
-    }
+		Session _session = null;
+		try {
+			_session = this.getSession();
+		} catch (final JSchException e) {
+			throw new java.io.IOException(e.toString());
+		}
 
-    IdentityRepository irepo = _session.getIdentityRepository();
-    UserInfo userinfo=_session.getUserInfo();
+		final IdentityRepository irepo = _session.getIdentityRepository();
+		final UserInfo userinfo = _session.getUserInfo();
 
-    mbuf.reset();
+		this.mbuf.reset();
 
-    if(typ==SSH2_AGENTC_REQUEST_IDENTITIES){ 
-      mbuf.putByte(SSH2_AGENT_IDENTITIES_ANSWER);
-      Vector identities = irepo.getIdentities();
-      synchronized(identities){
-        int count=0;
-        for(int i=0; i<identities.size(); i++){
-          Identity identity=(Identity)(identities.elementAt(i));
-          if(identity.getPublicKeyBlob()!=null)
-            count++;
-        }
-        mbuf.putInt(count);
-        for(int i=0; i<identities.size(); i++){
-          Identity identity=(Identity)(identities.elementAt(i));
-          byte[] pubkeyblob=identity.getPublicKeyBlob();
-          if(pubkeyblob==null)
-            continue;
-          mbuf.putString(pubkeyblob);
-          mbuf.putString(Util.empty);
-        }
-      }
-    }
-    else if(typ==SSH_AGENTC_REQUEST_RSA_IDENTITIES) {
-      mbuf.putByte(SSH_AGENT_RSA_IDENTITIES_ANSWER);
-      mbuf.putInt(0);
-    }
-    else if(typ==SSH2_AGENTC_SIGN_REQUEST){
-      byte[] blob=rbuf.getString();
-      byte[] data=rbuf.getString();
-      int flags=rbuf.getInt();
+		if (typ == this.SSH2_AGENTC_REQUEST_IDENTITIES) {
+			this.mbuf.putByte(this.SSH2_AGENT_IDENTITIES_ANSWER);
+			final Vector identities = irepo.getIdentities();
+			synchronized (identities) {
+				int count = 0;
+				for (int i = 0; i < identities.size(); i++) {
+					final Identity identity = (Identity) (identities.elementAt(i));
+					if (identity.getPublicKeyBlob() != null) {
+						count++;
+					}
+				}
+				this.mbuf.putInt(count);
+				for (int i = 0; i < identities.size(); i++) {
+					final Identity identity = (Identity) (identities.elementAt(i));
+					final byte[] pubkeyblob = identity.getPublicKeyBlob();
+					if (pubkeyblob == null) {
+						continue;
+					}
+					this.mbuf.putString(pubkeyblob);
+					this.mbuf.putString(Util.empty);
+				}
+			}
+		} else if (typ == this.SSH_AGENTC_REQUEST_RSA_IDENTITIES) {
+			this.mbuf.putByte(this.SSH_AGENT_RSA_IDENTITIES_ANSWER);
+			this.mbuf.putInt(0);
+		} else if (typ == this.SSH2_AGENTC_SIGN_REQUEST) {
+			final byte[] blob = this.rbuf.getString();
+			final byte[] data = this.rbuf.getString();
+			final int flags = this.rbuf.getInt();
 
-//      if((flags & 1)!=0){ //SSH_AGENT_OLD_SIGNATURE // old OpenSSH 2.0, 2.1
-//        datafellows = SSH_BUG_SIGBLOB;
-//      }
+			// if((flags & 1)!=0){ //SSH_AGENT_OLD_SIGNATURE // old OpenSSH 2.0, 2.1
+			// datafellows = SSH_BUG_SIGBLOB;
+			// }
 
-      Vector identities = irepo.getIdentities();
-      Identity identity = null;
-      synchronized(identities){
-        for(int i=0; i<identities.size(); i++){
-          Identity _identity=(Identity)(identities.elementAt(i));
-          if(_identity.getPublicKeyBlob()==null)
-            continue;
-          if(!Util.array_equals(blob, _identity.getPublicKeyBlob())){
-            continue;
-          }
-          if(_identity.isEncrypted()){
-            if(userinfo==null)
-              continue;
-            while(_identity.isEncrypted()){
-              if(!userinfo.promptPassphrase("Passphrase for "+_identity.getName())){
-                break;
-              }
+			final Vector identities = irepo.getIdentities();
+			Identity identity = null;
+			synchronized (identities) {
+				for (int i = 0; i < identities.size(); i++) {
+					final Identity _identity = (Identity) (identities.elementAt(i));
+					if (_identity.getPublicKeyBlob() == null) {
+						continue;
+					}
+					if (!Util.array_equals(blob, _identity.getPublicKeyBlob())) {
+						continue;
+					}
+					if (_identity.isEncrypted()) {
+						if (userinfo == null) {
+							continue;
+						}
+						while (_identity.isEncrypted()) {
+							if (!userinfo.promptPassphrase("Passphrase for " + _identity.getName())) {
+								break;
+							}
 
-              String _passphrase=userinfo.getPassphrase();
-              if(_passphrase==null){
-                break;
-              }
+							final String _passphrase = userinfo.getPassphrase();
+							if (_passphrase == null) {
+								break;
+							}
 
-              byte[] passphrase=Util.str2byte(_passphrase);
-              try{
-                if(_identity.setPassphrase(passphrase)){
-                  break;
-                }
-              }
-              catch(JSchException e){
-                break;
-              }
-            }
-          }
+							final byte[] passphrase = Util.str2byte(_passphrase);
+							try {
+								if (_identity.setPassphrase(passphrase)) {
+									break;
+								}
+							} catch (final JSchException e) {
+								break;
+							}
+						}
+					}
 
-          if(!_identity.isEncrypted()){
-            identity=_identity;
-            break;
-          }
-        }
-      }
+					if (!_identity.isEncrypted()) {
+						identity = _identity;
+						break;
+					}
+				}
+			}
 
-      byte[] signature=null;
+			byte[] signature = null;
 
-      if(identity!=null){
-        signature=identity.getSignature(data);
-      }
+			if (identity != null) {
+				signature = identity.getSignature(data);
+			}
 
-      if(signature==null){
-        mbuf.putByte(SSH2_AGENT_FAILURE);
-      }
-      else{
-        mbuf.putByte(SSH2_AGENT_SIGN_RESPONSE);
-        mbuf.putString(signature);
-      }
-    }
-    else if(typ==SSH2_AGENTC_REMOVE_IDENTITY){
-      byte[] blob=rbuf.getString();
-      irepo.remove(blob);
-      mbuf.putByte(SSH_AGENT_SUCCESS);
-    }
-    else if(typ==SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES){
-      mbuf.putByte(SSH_AGENT_SUCCESS);
-    }
-    else if(typ==SSH2_AGENTC_REMOVE_ALL_IDENTITIES){
-      irepo.removeAll();
-      mbuf.putByte(SSH_AGENT_SUCCESS);
-    }
-    else if(typ==SSH2_AGENTC_ADD_IDENTITY){
-      int fooo = rbuf.getLength();
-      byte[] tmp = new byte[fooo];
-      rbuf.getByte(tmp);
-      boolean result = irepo.add(tmp);
-      mbuf.putByte(result ? SSH_AGENT_SUCCESS : SSH_AGENT_FAILURE);
-    }
-    else {
-      rbuf.skip(rbuf.getLength()-1);
-      mbuf.putByte(SSH_AGENT_FAILURE);
-    }
+			if (signature == null) {
+				this.mbuf.putByte(this.SSH2_AGENT_FAILURE);
+			} else {
+				this.mbuf.putByte(this.SSH2_AGENT_SIGN_RESPONSE);
+				this.mbuf.putString(signature);
+			}
+		} else if (typ == this.SSH2_AGENTC_REMOVE_IDENTITY) {
+			final byte[] blob = this.rbuf.getString();
+			irepo.remove(blob);
+			this.mbuf.putByte(this.SSH_AGENT_SUCCESS);
+		} else if (typ == this.SSH_AGENTC_REMOVE_ALL_RSA_IDENTITIES) {
+			this.mbuf.putByte(this.SSH_AGENT_SUCCESS);
+		} else if (typ == this.SSH2_AGENTC_REMOVE_ALL_IDENTITIES) {
+			irepo.removeAll();
+			this.mbuf.putByte(this.SSH_AGENT_SUCCESS);
+		} else if (typ == this.SSH2_AGENTC_ADD_IDENTITY) {
+			final int fooo = this.rbuf.getLength();
+			final byte[] tmp = new byte[fooo];
+			this.rbuf.getByte(tmp);
+			final boolean result = irepo.add(tmp);
+			this.mbuf.putByte(result ? this.SSH_AGENT_SUCCESS : this.SSH_AGENT_FAILURE);
+		} else {
+			this.rbuf.skip(this.rbuf.getLength() - 1);
+			this.mbuf.putByte(this.SSH_AGENT_FAILURE);
+		}
 
-    byte[] response = new byte[mbuf.getLength()];
-    mbuf.getByte(response);
-    send(response);
-  }
+		final byte[] response = new byte[this.mbuf.getLength()];
+		this.mbuf.getByte(response);
+		this.send(response);
+	}
 
-  private void send(byte[] message){
-    packet.reset();
-    wbuf.putByte((byte)Session.SSH_MSG_CHANNEL_DATA);
-    wbuf.putInt(recipient);
-    wbuf.putInt(4+message.length);
-    wbuf.putString(message);
+	private void send(final byte[] message) {
+		this.packet.reset();
+		this.wbuf.putByte((byte) Session.SSH_MSG_CHANNEL_DATA);
+		this.wbuf.putInt(this.recipient);
+		this.wbuf.putInt(4 + message.length);
+		this.wbuf.putString(message);
 
-    try{
-      getSession().write(packet, this, 4+message.length);
-    }
-    catch(Exception e){
-    }
-  }
+		try {
+			this.getSession().write(this.packet, this, 4 + message.length);
+		} catch (final Exception e) {}
+	}
 
-  void eof_remote(){
-    super.eof_remote();
-    eof();
-  }
+	@Override
+	void eof_remote() {
+		super.eof_remote();
+		this.eof();
+	}
 }

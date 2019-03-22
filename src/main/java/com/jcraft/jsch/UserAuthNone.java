@@ -29,101 +29,104 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-class UserAuthNone extends UserAuth{
-  private static final int SSH_MSG_SERVICE_ACCEPT=                  6;
-  private String methods=null;
+class UserAuthNone extends UserAuth {
 
-  public boolean start(Session session) throws Exception{
-    super.start(session);
+	private static final int SSH_MSG_SERVICE_ACCEPT = 6;
+	private String methods = null;
 
+	@Override
+	public boolean start(final Session session) throws Exception {
+		super.start(session);
 
-    // send
-    // byte      SSH_MSG_SERVICE_REQUEST(5)
-    // string    service name "ssh-userauth"
-    packet.reset();
-    buf.putByte((byte)Session.SSH_MSG_SERVICE_REQUEST);
-    buf.putString(Util.str2byte("ssh-userauth"));
-    session.write(packet);
+		// send
+		// byte SSH_MSG_SERVICE_REQUEST(5)
+		// string service name "ssh-userauth"
+		this.packet.reset();
+		this.buf.putByte((byte) Session.SSH_MSG_SERVICE_REQUEST);
+		this.buf.putString(Util.str2byte("ssh-userauth"));
+		session.write(this.packet);
 
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
-                           "SSH_MSG_SERVICE_REQUEST sent");
-    }
+		if (JSch.getLogger().isEnabled(Logger.INFO)) {
+			JSch.getLogger().log(Logger.INFO,
+					"SSH_MSG_SERVICE_REQUEST sent");
+		}
 
-    // receive
-    // byte      SSH_MSG_SERVICE_ACCEPT(6)
-    // string    service name
-    buf=session.read(buf);
-    int command=buf.getCommand();
+		// receive
+		// byte SSH_MSG_SERVICE_ACCEPT(6)
+		// string service name
+		this.buf = session.read(this.buf);
+		int command = this.buf.getCommand();
 
-    boolean result=(command==SSH_MSG_SERVICE_ACCEPT);
+		final boolean result = (command == SSH_MSG_SERVICE_ACCEPT);
 
-    if(JSch.getLogger().isEnabled(Logger.INFO)){
-      JSch.getLogger().log(Logger.INFO, 
-                           "SSH_MSG_SERVICE_ACCEPT received");
-    }
-    if(!result)
-      return false;
+		if (JSch.getLogger().isEnabled(Logger.INFO)) {
+			JSch.getLogger().log(Logger.INFO,
+					"SSH_MSG_SERVICE_ACCEPT received");
+		}
+		if (!result) {
+			return false;
+		}
 
-    byte[] _username=null;
-    _username=Util.str2byte(username);
+		byte[] _username = null;
+		_username = Util.str2byte(this.username);
 
-    // send
-    // byte      SSH_MSG_USERAUTH_REQUEST(50)
-    // string    user name
-    // string    service name ("ssh-connection")
-    // string    "none"
-    packet.reset();
-    buf.putByte((byte)SSH_MSG_USERAUTH_REQUEST);
-    buf.putString(_username);
-    buf.putString(Util.str2byte("ssh-connection"));
-    buf.putString(Util.str2byte("none"));
-    session.write(packet);
+		// send
+		// byte SSH_MSG_USERAUTH_REQUEST(50)
+		// string user name
+		// string service name ("ssh-connection")
+		// string "none"
+		this.packet.reset();
+		this.buf.putByte((byte) SSH_MSG_USERAUTH_REQUEST);
+		this.buf.putString(_username);
+		this.buf.putString(Util.str2byte("ssh-connection"));
+		this.buf.putString(Util.str2byte("none"));
+		session.write(this.packet);
 
-    loop:
-    while(true){
-      buf=session.read(buf);
-      command=buf.getCommand()&0xff;
+		loop: while (true) {
+			this.buf = session.read(this.buf);
+			command = this.buf.getCommand() & 0xff;
 
-      if(command==SSH_MSG_USERAUTH_SUCCESS){
-	return true;
-      }
-      if(command==SSH_MSG_USERAUTH_BANNER){
-	buf.getInt(); buf.getByte(); buf.getByte();
-	byte[] _message=buf.getString();
-	byte[] lang=buf.getString();
-	String message=Util.byte2str(_message);
-	if(userinfo!=null){
-          try{
-            userinfo.showMessage(message);
-          }
-          catch(RuntimeException ee){
-          }
+			if (command == SSH_MSG_USERAUTH_SUCCESS) {
+				return true;
+			}
+			if (command == SSH_MSG_USERAUTH_BANNER) {
+				this.buf.getInt();
+				this.buf.getByte();
+				this.buf.getByte();
+				final byte[] _message = this.buf.getString();
+				final byte[] lang = this.buf.getString();
+				final String message = Util.byte2str(_message);
+				if (this.userinfo != null) {
+					try {
+						this.userinfo.showMessage(message);
+					} catch (final RuntimeException ee) {}
+				}
+				continue loop;
+			}
+			if (command == SSH_MSG_USERAUTH_FAILURE) {
+				this.buf.getInt();
+				this.buf.getByte();
+				this.buf.getByte();
+				final byte[] foo = this.buf.getString();
+				final int partial_success = this.buf.getByte();
+				this.methods = Util.byte2str(foo);
+				// System.err.println("UserAuthNONE: "+methods+
+				// " partial_success:"+(partial_success!=0));
+				// if(partial_success!=0){
+				// throw new JSchPartialAuthException(new String(foo));
+				// }
+
+				break;
+			} else {
+				// System.err.println("USERAUTH fail ("+command+")");
+				throw new JSchException("USERAUTH fail (" + command + ")");
+			}
+		}
+		// throw new JSchException("USERAUTH fail");
+		return false;
 	}
-	continue loop;
-      }
-      if(command==SSH_MSG_USERAUTH_FAILURE){
-	buf.getInt(); buf.getByte(); buf.getByte(); 
-	byte[] foo=buf.getString();
-	int partial_success=buf.getByte();
-	methods=Util.byte2str(foo);
-//System.err.println("UserAuthNONE: "+methods+
-//		   " partial_success:"+(partial_success!=0));
-//	if(partial_success!=0){
-//	  throw new JSchPartialAuthException(new String(foo));
-//	}
 
-        break;
-      }
-      else{
-//      System.err.println("USERAUTH fail ("+command+")");
-	throw new JSchException("USERAUTH fail ("+command+")");
-      }
-    }
-   //throw new JSchException("USERAUTH fail");
-    return false;
-  }
-  String getMethods(){
-    return methods;
-  }
+	String getMethods() {
+		return this.methods;
+	}
 }

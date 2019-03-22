@@ -29,104 +29,122 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-public class IO{
-  InputStream in;
-  OutputStream out;
-  OutputStream out_ext;
+public class IO {
 
-  private boolean in_dontclose=false;
-  private boolean out_dontclose=false;
-  private boolean out_ext_dontclose=false;
+	InputStream in;
+	OutputStream out;
+	OutputStream out_ext;
 
-  void setOutputStream(OutputStream out){ this.out=out; }
-  void setOutputStream(OutputStream out, boolean dontclose){
-    this.out_dontclose=dontclose;
-    setOutputStream(out);
-  }
-  void setExtOutputStream(OutputStream out){ this.out_ext=out; }
-  void setExtOutputStream(OutputStream out, boolean dontclose){
-    this.out_ext_dontclose=dontclose;
-    setExtOutputStream(out);
-  }
-  void setInputStream(InputStream in){ this.in=in; }
-  void setInputStream(InputStream in, boolean dontclose){
-    this.in_dontclose=dontclose;
-    setInputStream(in);
-  }
+	private boolean in_dontclose = false;
+	private boolean out_dontclose = false;
+	private boolean out_ext_dontclose = false;
 
-  public void put(Packet p) throws IOException, java.net.SocketException {
-    out.write(p.buffer.buffer, 0, p.buffer.index);
-    out.flush();
-  }
-  void put(byte[] array, int begin, int length) throws IOException {
-    out.write(array, begin, length);
-    out.flush();
-  }
-  void put_ext(byte[] array, int begin, int length) throws IOException {
-    out_ext.write(array, begin, length);
-    out_ext.flush();
-  }
+	void setOutputStream(final OutputStream out) {
+		this.out = out;
+	}
 
-  int getByte() throws IOException {
-    return in.read();
-  }
+	void setOutputStream(final OutputStream out, final boolean dontclose) {
+		this.out_dontclose = dontclose;
+		this.setOutputStream(out);
+	}
 
-  void getByte(byte[] array) throws IOException {
-    getByte(array, 0, array.length);
-  }
+	void setExtOutputStream(final OutputStream out) {
+		this.out_ext = out;
+	}
 
-  void getByte(byte[] array, int begin, int length) throws IOException {
-    do{
-      int completed = in.read(array, begin, length);
-      if(completed<0){
-	throw new IOException("End of IO Stream Read");
-      }
-      begin+=completed;
-      length-=completed;
-    }
-    while (length>0);
-  }
+	void setExtOutputStream(final OutputStream out, final boolean dontclose) {
+		this.out_ext_dontclose = dontclose;
+		this.setExtOutputStream(out);
+	}
 
-  void out_close(){
-    try{
-      if(out!=null && !out_dontclose) out.close();
-      out=null;
-    }
-    catch(Exception ee){}
-  }
+	void setInputStream(final InputStream in) {
+		this.in = in;
+	}
 
-  public void close(){
-    try{
-      if(in!=null && !in_dontclose) in.close();
-      in=null;
-    }
-    catch(Exception ee){}
+	void setInputStream(final InputStream in, final boolean dontclose) {
+		this.in_dontclose = dontclose;
+		this.setInputStream(in);
+	}
 
-    out_close();
+	public void put(final Packet p) throws IOException, java.net.SocketException {
+		this.out.write(p.buffer.buffer, 0, p.buffer.index);
+		this.out.flush();
+	}
 
-    try{
-      if(out_ext!=null && !out_ext_dontclose) out_ext.close();
-      out_ext=null;
-    }
-    catch(Exception ee){}
-  }
+	void put(final byte[] array, final int begin, final int length) throws IOException {
+		this.out.write(array, begin, length);
+		this.out.flush();
+	}
 
-  /*
-  public void finalize() throws Throwable{
-    try{
-      if(in!=null) in.close();
-    }
-    catch(Exception ee){}
-    try{
-      if(out!=null) out.close();
-    }
-    catch(Exception ee){}
-    try{
-      if(out_ext!=null) out_ext.close();
-    }
-    catch(Exception ee){}
-  }
-  */
+	void put_ext(final byte[] array, final int begin, final int length) throws IOException {
+		this.out_ext.write(array, begin, length);
+		this.out_ext.flush();
+	}
+
+	int getByte() throws IOException {
+		return this.in.read();
+	}
+
+	void getByte(final byte[] array) throws IOException {
+		this.getByte(array, 0, array.length);
+	}
+
+	void getByte(final byte[] array, int begin, int length) throws IOException {
+		do {
+			final int completed = this.in.read(array, begin, length);
+			if (completed < 0) {
+				throw new IOException("End of IO Stream Read");
+			}
+			begin += completed;
+			length -= completed;
+		} while (length > 0);
+	}
+
+	void out_close() {
+		try {
+			if (this.out != null && !this.out_dontclose) {
+				this.out.close();
+			}
+			this.out = null;
+		} catch (final Exception ee) {}
+	}
+
+	public void close() {
+		try {
+			if (this.in != null && !this.in_dontclose) {
+				this.in.close();
+			}
+			this.in = null;
+		} catch (final Exception ee) {}
+
+		this.out_close();
+
+		try {
+			if (this.out_ext != null && !this.out_ext_dontclose) {
+				this.out_ext.close();
+			}
+			this.out_ext = null;
+		} catch (final Exception ee) {}
+	}
+
+	/*
+	 * public void finalize() throws Throwable{
+	 * try{
+	 * if(in!=null) in.close();
+	 * }
+	 * catch(Exception ee){}
+	 * try{
+	 * if(out!=null) out.close();
+	 * }
+	 * catch(Exception ee){}
+	 * try{
+	 * if(out_ext!=null) out_ext.close();
+	 * }
+	 * catch(Exception ee){}
+	 * }
+	 */
 }

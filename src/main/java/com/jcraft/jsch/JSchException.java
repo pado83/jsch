@@ -29,20 +29,30 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-public class JSchException extends Exception{
-  //private static final long serialVersionUID=-1319309923966731989L;
-  private Throwable cause=null;
-  public JSchException () {
-    super();
-  }
-  public JSchException (String s) {
-    super(s);
-  }
-  public JSchException (String s, Throwable e) {
-    super(s);
-    this.cause=e;
-  }
-  public Throwable getCause(){
-    return this.cause;
-  }
+public class JSchException extends Exception {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -698795011754726535L;
+	// private static final long serialVersionUID=-1319309923966731989L;
+	private Throwable cause = null;
+
+	public JSchException() {
+		super();
+	}
+
+	public JSchException(final String s) {
+		super(s);
+	}
+
+	public JSchException(final String s, final Throwable e) {
+		super(s);
+		this.cause = e;
+	}
+
+	@Override
+	public Throwable getCause() {
+		return this.cause;
+	}
 }

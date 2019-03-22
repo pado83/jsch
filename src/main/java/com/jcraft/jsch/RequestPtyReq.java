@@ -29,50 +29,51 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.jcraft.jsch;
 
-class RequestPtyReq extends Request{
-  private String ttype="vt100";
-  private int tcol=80;
-  private int trow=24;
-  private int twp=640;
-  private int thp=480;
+class RequestPtyReq extends Request {
 
-  private byte[] terminal_mode=Util.empty;
+	private String ttype = "vt100";
+	private int tcol = 80;
+	private int trow = 24;
+	private int twp = 640;
+	private int thp = 480;
 
-  void setCode(String cookie){
-  }
+	private byte[] terminal_mode = Util.empty;
 
-  void setTType(String ttype){
-    this.ttype=ttype;
-  }
-  
-  void setTerminalMode(byte[] terminal_mode){
-    this.terminal_mode=terminal_mode;
-  }
+	void setCode(final String cookie) {}
 
-  void setTSize(int tcol, int trow, int twp, int thp){
-    this.tcol=tcol;
-    this.trow=trow;
-    this.twp=twp;
-    this.thp=thp;
-  }
+	void setTType(final String ttype) {
+		this.ttype = ttype;
+	}
 
-  public void request(Session session, Channel channel) throws Exception{
-    super.request(session, channel);
+	void setTerminalMode(final byte[] terminal_mode) {
+		this.terminal_mode = terminal_mode;
+	}
 
-    Buffer buf=new Buffer();
-    Packet packet=new Packet(buf);
+	void setTSize(final int tcol, final int trow, final int twp, final int thp) {
+		this.tcol = tcol;
+		this.trow = trow;
+		this.twp = twp;
+		this.thp = thp;
+	}
 
-    packet.reset();
-    buf.putByte((byte) Session.SSH_MSG_CHANNEL_REQUEST);
-    buf.putInt(channel.getRecipient());
-    buf.putString(Util.str2byte("pty-req"));
-    buf.putByte((byte)(waitForReply() ? 1 : 0));
-    buf.putString(Util.str2byte(ttype));
-    buf.putInt(tcol);
-    buf.putInt(trow);
-    buf.putInt(twp);
-    buf.putInt(thp);
-    buf.putString(terminal_mode);
-    write(packet);
-  }
+	@Override
+	public void request(final Session session, final Channel channel) throws Exception {
+		super.request(session, channel);
+
+		final Buffer buf = new Buffer();
+		final Packet packet = new Packet(buf);
+
+		packet.reset();
+		buf.putByte((byte) Session.SSH_MSG_CHANNEL_REQUEST);
+		buf.putInt(channel.getRecipient());
+		buf.putString(Util.str2byte("pty-req"));
+		buf.putByte((byte) (this.waitForReply() ? 1 : 0));
+		buf.putString(Util.str2byte(this.ttype));
+		buf.putInt(this.tcol);
+		buf.putInt(this.trow);
+		buf.putInt(this.twp);
+		buf.putInt(this.thp);
+		buf.putString(this.terminal_mode);
+		this.write(packet);
+	}
 }
