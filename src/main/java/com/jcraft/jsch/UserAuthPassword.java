@@ -61,20 +61,19 @@ class UserAuthPassword extends UserAuth {
 						// break;
 					}
 
-					final String _password = this.userinfo.getPassword();
-					if (_password == null) {
-						if (this.userinfo instanceof SecureUserInfo) {
-							password = ((SecureUserInfo) this.userinfo).getSecurePassword();
-							if (password == null) {
-								throw new JSchAuthCancelException("password");
-							}
-						} else {
+					if (this.userinfo instanceof SecureUserInfo) {
+						password = ((SecureUserInfo) this.userinfo).getSecurePassword();
+						if (password == null) {
+							throw new JSchAuthCancelException("password");
+						}
+					} else {
+						final String _password = this.userinfo.getPassword();
+						if (_password == null) {
 							throw new JSchAuthCancelException("password");
 							// break;
 						}
-
+						password = Util.str2byte(_password);
 					}
-					password = Util.str2byte(_password);
 				}
 
 				byte[] _username = null;
